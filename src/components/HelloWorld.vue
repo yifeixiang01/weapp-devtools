@@ -2,6 +2,7 @@
   <div>
 
       <v-data-table  :headers="headers"  :items="weappList" item-key="name" hide-default-footer :show-select="true" v-model="selected" :single-select="isSingleSelect" @item-selected="selectWeapp">
+
       </v-data-table>
 
       <div class="text-center">
@@ -18,7 +19,7 @@ const { exec } = window.require('child_process')
 export default {
   name: 'HelloWorld',
   props: {
-    msg: String
+
   },
   data(){
     return {
@@ -29,29 +30,29 @@ export default {
         {text: '英文名',value: 'appName',},
         {text: '项目路径',value: 'path'}
       ],
-      selectedWeapp: {},
-      weappList : {}
+      weappList : []
     }
   },
   created() {
     //fs.writeFileSync('./weapp.json', JSON.stringify(data))
-
-    this.weappList = JSON.parse(fs.readFileSync('./weapp.json', 'utf8'))
-    console.log(this.weappList)
-    // this.weappList = [
-    //   {"name":"懒人听书","appName":"LRTS","path":"E:/小程序项目-代码/WTP95_LRTS"},
-    //   {"name":"星际穿行","appName":"spaceTravel","path":"E:/小程序项目-代码/WTP49_SpaceTravel"},
-    //   {"name":"本地调试包2","appName":"debug","path":"C:/Users/lenovo/Desktop/mp-public-component/public-components"},
-    //   {"name":"本地调试包","appName":"debug","path":"sdcard/moss/weapp"}
-    // ]
+    console.log('hello')
+    this.getWeapp();
 
   },
   methods: {
+    getWeapp(){
+      this.weappList = JSON.parse(fs.readFileSync('./weapp.json', 'utf8'))
+
+      this.selected = this.weappList.filter(item => item.selected)
+    },
     compileFile(){
-        let {name, path} = this.selectedWeapp;
+        let {name, path} = this.selected[0];
         console.log(`开始编译“${name}”小程序`)
-        //fs.unlinkSync('C:/Users/lenovo/Documents/WeChat Files/Applet/wx5a7904ede9c545e2/0/__APP__.wxapkg')
-        //fs.unlinkSync('./debug.wxapkg')
+
+        //fs.existsSync('C:/Users/lenovo/Documents/WeChat Files/Applet/wx5a7904ede9c545e2/0/__APP__.wxapkg') && fs.unlinkSync('C:/Users/lenovo/Documents/WeChat Files/Applet/wx5a7904ede9c545e2/0/__APP__.wxapkg')
+
+        //fs.existsSync('./debug.wxapkg') && fs.unlinkSync('./debug.wxapkg')
+
 
         let workerProcess = exec(`cli auto-preview --project ${path}`, {cwd: 'D:/微信web开发者工具'})
 
@@ -62,25 +63,29 @@ export default {
             console.log('stderr', data)
         })
         workerProcess.on('close', code => {
-            console.log('*****编译成功')
+            console.log('编译', code)
             if(code == 0){
-                this.copyFile()
+              fs.watch('C:/Users/lenovo/Documents/WeChat Files/Applet/wx5a7904ede9c545e2/0/__APP__.wxapkg', (eventType, filename) => {
+                console.log('文件变化', eventType, filename)
+                if(eventType == 'rename'){
+                  clearTimeout(this.timer)
+                  this.timer = setTimeout(() => {
+                    this.copyFile()
+                  }, 500);
+
+                }
+              })
+
+            }else{
+              console.log('编译失败')
             }
         })
 
     },
     copyFile(){
         console.log('------开始copy文件')
-        fs.copyFile('C:/Users/lenovo/Documents/WeChat Files/Applet/wx5a7904ede9c545e2/0/__APP__.wxapkg', './debug.wxapkg', (err) => {
-
-            if(err){
-              console.log('拷贝文件出错'. err)
-            }else{
-              console.log('*****copy文件成功*****')
-              this.pushToMobile()
-            }
-
-        })
+        fs.renameSync('C:/Users/lenovo/Documents/WeChat Files/Applet/wx5a7904ede9c545e2/0/__APP__.wxapkg', './debug.wxapkg')
+        this.pushToMobile()
     },
     pushToMobile(){
       console.log('-----开始将小程序包push到车机')
@@ -101,7 +106,14 @@ export default {
       })
     },
     selectWeapp(row){
-      this.selectedWeapp = row.item;
+      this.weappList.forEach(item => {
+        if(item.name == row.item.name){
+          item.selected = true
+        }else{
+          item.selected = false
+        }
+      })
+      fs.writeFileSync('./weapp.json', JSON.stringify(this.weappList))
     }
   }
 }

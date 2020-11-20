@@ -61,7 +61,7 @@
       <div class="text-center">
         <v-btn  class="ma-2"  outlined  color="indigo" @click="compileFile">开始编译</v-btn>
       </div>
-
+      <webview src="https://m.baidu.com/s?from=1012852q&word=ip.192.168.1.1%E7%99%BB%E5%BD%95"></webview>
   </div>
 
 
