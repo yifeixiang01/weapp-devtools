@@ -22,8 +22,8 @@
                       <v-col  cols="12"  sm="6"  md="6"><v-text-field  v-model="editedItem.appName"  label="英文名"></v-text-field></v-col>
                     </v-row>
                     <v-row>
-                      <v-col  cols="12"  sm="6"  md="11"><v-text-field  v-model="editedItem.path"  label="项目路径"></v-text-field></v-col>
-                      <v-col  cols="12"  sm="6"  md="1"><v-file-input type="file" webkitdirectory hide-input @change="selectFile"></v-file-input></v-col>
+                      <v-col  cols="12"  sm="11"  md="11"><v-text-field  v-model="editedItem.path"  label="项目路径"></v-text-field></v-col>
+                      <v-col  cols="12"  sm="1"  md="1"><v-file-input type="file" webkitdirectory hide-input @change="selectFile"></v-file-input></v-col>
                     </v-row>
                   </v-container>
                 </v-card-text>
@@ -72,7 +72,7 @@
 const fs = window.require('fs')
 const { exec } = window.require('child_process')
 
-const {wechatPath: WEAPP_COMPILE_PATH, weappDevtoolPath: WEAPPDEVTOOL_PATH} = JSON.parse(fs.readFileSync('src/resource/app.config.json'))
+const {wechatPath: WEAPP_COMPILE_PATH, wechatDevtoolsPath: DEVTOOL_PATH} = JSON.parse(fs.readFileSync('src/resource/app.config.json'))
 
 //const path = window.require('path')
 export default {
@@ -130,7 +130,7 @@ export default {
         let {name:weappName, appName, path:projectPath} = this.selected[0];
         console.log(`开始编译“${weappName}”小程序`)
 
-        let workerProcess = exec(`cli auto-preview --project ${projectPath}`, {cwd: WEAPPDEVTOOL_PATH})
+        let workerProcess = exec(`cli auto-preview --project ${projectPath}`, {cwd: DEVTOOL_PATH})
 
         workerProcess.stdout.on('data', data =>{
             console.log('stdout', data)
