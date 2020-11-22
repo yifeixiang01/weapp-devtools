@@ -70,7 +70,10 @@ export default {
 
       ipcRendererOn('getMirrorConfig-reply', value => {
         console.log('获取到镜像配置', value)
-        this.windowSetting = value
+        if(value){
+          this.windowSetting = value
+        }
+        
       })
     },
     start(){

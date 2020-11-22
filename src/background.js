@@ -61,7 +61,7 @@ async function createWindow () {
   })
   //监听获取镜像设置
   ipcMain.on('getMirrorConfig', (event) => {
-    let mirrorConfig = electronStore.get('mirrorConfig') || {}
+    let mirrorConfig = electronStore.get('mirrorConfig')
 
     event.reply('getMirrorConfig-reply', mirrorConfig)
   })
