@@ -61,7 +61,7 @@
       <div class="text-center">
         <v-btn  class="ma-2"  outlined  color="indigo" @click="compileFile">开始编译</v-btn>
       </div>
-      <webview src="https://m.baidu.com/s?from=1012852q&word=ip.192.168.1.1%E7%99%BB%E5%BD%95"></webview>
+
   </div>
 
 
@@ -70,11 +70,11 @@
 <script>
 
 const fs = window.require('fs')
+// const { ipcRenderer } = window.require('electron')
 const { exec } = window.require('child_process')
 
-const {wechatPath: WEAPP_COMPILE_PATH, wechatDevtoolsPath: DEVTOOL_PATH} = JSON.parse(fs.readFileSync('src/resource/app.config.json'))
+let {ipcRenderSend, ipcRendererOn} = require('../main/store.js')
 
-//const path = window.require('path')
 export default {
   name: 'HelloWorld',
   props: {
@@ -82,6 +82,7 @@ export default {
   },
   data(){
     return {
+      config: {},
       isSingleSelect: true,
       selected: [],
       headers: [
@@ -100,10 +101,10 @@ export default {
     }
   },
   created() {
-    //fs.writeFileSync('./weapp.json', JSON.stringify(data))
-    console.log('hello')
-    this.getWeappList();
+    this.getConfig();
 
+    this.getWeappList();
+    
   },
   computed: {
     formTitle () {
@@ -119,18 +120,36 @@ export default {
       }
     },
   methods: {
+    getConfig(){
+      ipcRenderSend('getWeappConfig')
+
+      ipcRendererOn('getWeappConfig-reply', value => {
+        console.log('获取到配置信息：', value)
+
+        this.config = value
+      })
+    },
     //读取小程序列表
     getWeappList(){
-      this.weappList = JSON.parse(fs.readFileSync('src/resource/weapp.json', 'utf8'))
+      //this.weappList = JSON.parse(fs.readFileSync('src/resource/weapp.json', 'utf8'))
+      ipcRenderSend('getWeappList')
 
-      this.selected = this.weappList.filter(item => item.selected)
+      ipcRendererOn('getWeappList-reply', value => {
+        console.log('获取小程序列表', value)
+        this.weappList = value
+        this.selected = this.weappList.filter(item => item.selected)
+      })
     },
     //将小程序进行编译，并生成.wxapkg文件
     compileFile(){
+        if(this.selected.length == 0){
+          console.log('请先选择小程序')
+          return 
+        }
         let {name:weappName, appName, path:projectPath} = this.selected[0];
         console.log(`开始编译“${weappName}”小程序`)
 
-        let workerProcess = exec(`cli auto-preview --project ${projectPath}`, {cwd: DEVTOOL_PATH})
+        let workerProcess = exec(`cli auto-preview --project ${projectPath}`, {cwd: this.config.wechatDevtoolsPath})
 
         workerProcess.stdout.on('data', data =>{
             console.log('stdout', data)
@@ -141,7 +160,7 @@ export default {
         workerProcess.on('close', code => {
             console.log('编译', code)
             if(code == 0){
-              fs.watch(WEAPP_COMPILE_PATH, (eventType, filename) => {
+              fs.watch(this.config.weappPath, (eventType, filename) => {
                 console.log('文件变化', eventType, filename)
                 if(eventType == 'rename' || eventType == 'change'){
                   clearTimeout(this.timer)
@@ -160,17 +179,16 @@ export default {
     },
     //将_APP_.wxapkg copy到当前目录下，并修改文件名
     copyFile(weappName, appName){
-        console.log('------开始copy文件')
-        fs.copyFile(WEAPP_COMPILE_PATH, `src/resource/${appName}.wxapkg`, ()=>{
+        console.log('------开始copy文件', weappName, appName)
+        fs.copyFile(`${this.config.weappPath}/__APP__.wxapkg`, `${this.config.weappSavePath}/${appName}.wxapkg`, ()=>{
           this.pushToMobile(weappName, appName)
         })
-
     },
     //调用adb命令将小程序包push到车机or手机
     pushToMobile(weappName, appName){
       console.log('-----开始将小程序包push到车机')
       let pathInCar = appName === 'debug'? 'sdcard/moss/weapp': `data/data/com.tencent.wewarmas/files/moss/${weappName}/pkg`
-      let workerProcess = exec(`adb push src/resource/${appName}.wxapkg ${pathInCar}`, {cwd: './'})
+      let workerProcess = exec(`adb push ${this.config.weappSavePath}/${appName}.wxapkg ${pathInCar}`, {cwd: './'})
 
       workerProcess.stdout.on('data', data =>{
           console.log('stdout', data)
@@ -196,7 +214,7 @@ export default {
           item.selected = false
         }
       })
-      fs.writeFileSync('src/resource/weapp.json', JSON.stringify(this.weappList))
+      ipcRenderSend('setWeappList', this.weappList)
     },
     editItem (item) {
       console.log(item)
@@ -219,7 +237,7 @@ export default {
     deleteItemConfirm () {
       console.log(this.editedIndex)
       this.weappList.splice(this.editedIndex, 1)
-      fs.writeFileSync('src/resource/weapp.json', JSON.stringify(this.weappList))
+      ipcRenderSend('setWeappList', this.weappList)
       this.closeDelete()
     },
     close () {
@@ -236,7 +254,7 @@ export default {
       }else{
         this.weappList.push(this.editedItem)
       }
-      fs.writeFileSync('src/resource/weapp.json', JSON.stringify(this.weappList))
+      ipcRenderSend('setWeappList', this.weappList)
       this.close()
     },
     //选择文件
@@ -252,7 +270,7 @@ export default {
           let config = JSON.parse(fs.readFileSync(`${path}/project.config.json`))
 
           this.$set(this.editedItem, 'path', path)
-          this.$set(this.editedItem, 'appName', config.projectname)
+          this.editedItem.appName || this.$set(this.editedItem, 'appName', config.projectname)
 
         }else{
           alert('请选择正确的小程序路径！')

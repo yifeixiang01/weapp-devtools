@@ -28,11 +28,11 @@ class Scrcpy{
             console.log('关闭', code)
         })
     }
-    getCmdStr(windowSetting){
+    getCmdStr(options){
         let cmdStr = 'scrcpy'
 
-        for(let key in windowSetting){
-            cmdStr += this.cmdObj[key](windowSetting[key])
+        for(let key in options){
+            cmdStr += this.cmdObj[key](options[key])
         }
         console.log(cmdStr)
         return cmdStr
