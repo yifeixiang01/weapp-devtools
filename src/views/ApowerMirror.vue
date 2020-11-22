@@ -1,25 +1,41 @@
 <template>
   <v-form  ref="form"  v-model="valid"  lazy-validation>
-    <v-text-field  v-model="name"  :counter="10"  label="Name"  required></v-text-field>
-    <v-slider min="0"  max="1920" v-model="resolution " step="10"  label="画面分辨率" thumb-label="always" ></v-slider>
-    <v-slider  v-model="bitRate"  :max="1024" step="10"  label="传输比特率"  class="align-center" thumb-label="always" :thumb-size="30"></v-slider>
+    
+    <v-row><v-col cols="10"><v-text-field  v-model="windowSetting.windowTitle" outlined dense label="窗口标题" hint="默认为设备名称" persistent-hint></v-text-field></v-col></v-row>
+    <v-row><v-col cols="10"><v-slider min="0"  max="1920" v-model="resolution " step="10"  label="画面分辨率"></v-slider></v-col><v-col><span>{{resolution}}</span></v-col></v-row>
+    <v-row><v-col cols="10"> <v-slider  v-model="bitRate"  :max="1024" step="10"  label="传输比特率"  class="align-center"></v-slider></v-col><v-col><span>{{bitRate}}</span></v-col></v-row>
     <v-row>
       <v-col cols="4">
-        <v-switch v-model="selected" label="窗口置顶"  value="setWindowTop" @click="windowTop"></v-switch>
+        <v-checkbox v-model="windowSetting.alwaysOnUp" label="窗口置顶"></v-checkbox>
       </v-col>
-      <v-col cols="4">
-        <v-switch v-model="selected"  label="悬浮工具栏"  value="John2"></v-switch>
+      <!-- <v-col cols="4">
+        <v-checkbox v-model="selected"  label="悬浮工具栏"  value="John2"></v-checkbox>
+      </v-col> -->
+      <v-col  cols="4">
+        <v-checkbox v-model="windowSetting.fullscreen"  label="全屏启动"></v-checkbox>
       </v-col>
       <v-col  cols="4">
-        <v-switch v-model="selected"  label="全屏启动"  value="John3"></v-switch>
+        <v-checkbox v-model="windowSetting.screenOff"  label="设备黑屏启动"></v-checkbox>
       </v-col>
       <v-col  cols="4">
-        <v-switch v-model="selected"  label="黑屏启动"  value="John4"></v-switch>
+        <v-checkbox v-model="windowSetting.borderless"  label="无边框"></v-checkbox>
       </v-col>
       <v-col  cols="4">
-        <v-switch v-model="selected"  label="旋转镜像"  value="John5"></v-switch>
+        <v-checkbox v-model="windowSetting.stayAwake"  label="保持常亮"></v-checkbox>
       </v-col>
-{{ selected }}
+      <v-col  cols="4">
+        <v-checkbox v-model="windowSetting.showTouches"  label="显示触摸轨迹"></v-checkbox>
+      </v-col>
+      <v-col  cols="4">
+        <v-checkbox v-model="windowSetting.disableScreensaver"  label="关闭屏幕保护"></v-checkbox>
+      </v-col>
+      <!-- <v-col  cols="4">
+        <v-checkbox v-model="selected"  label="黑屏启动"  value="John4"></v-checkbox>
+      </v-col> -->
+      <!-- <v-col  cols="4">
+        <v-checkbox v-model="selected"  label="旋转镜像"  value="John5"></v-checkbox>
+      </v-col> -->
+
     </v-row>
     <v-btn  :disabled="!valid"  color="success"  class="mr-4"  @click="validate">保存设置</v-btn>
     <v-btn  :disabled="!valid"  color="success"  class="mr-4"  @click="start">启动</v-btn>
@@ -27,11 +43,24 @@
 </template>
 
 <script>
-const { exec } = window.require('child_process')
+// const { exec } = window.require('child_process')
+const Scrcpy = require('./scrcpy')
+const scrcpyTool = new Scrcpy();
+
 export default {
   data: ()=>({
-    name: '',
-    selected: [],
+    windowSetting: {
+      windowTitle: '',                     //窗口标题
+      alwaysOnUp: false,                   //保持最前
+      fullscreen: false,                   //全屏启动
+      screenOff: false,                    //黑屏启动
+      borderless: false,                   //无边框
+      stayAwake: false,                    //屏幕常量
+      showTouches: false,                  //显示触摸轨迹
+      disableScreensaver: false,           //关闭屏幕保护
+    },
+    
+
     valid: true,
     resolution: 1024,
     bitRate: 100,
@@ -48,17 +77,7 @@ export default {
       this.$refs.form.resetValidation()
     },
     start(){
-      let workerProcess = exec('scrcpy', {cwd: 'src/resource/scrcpy-win64-v1.15.1'})
-
-        workerProcess.stdout.on('data', data =>{
-            console.log('stdout', data)
-        })
-        workerProcess.stderr.on('data', data =>{
-            console.log('stderr', data)
-        })
-        workerProcess.on('close', code => {
-            console.log('启动', code)
-        })
+      scrcpyTool.start(this.windowSetting) 
     },
     windowTop(){
       console.log(this.selected)

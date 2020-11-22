@@ -19,9 +19,14 @@
 
 
     <v-main>
-      <keep-alive>
-        <router-view></router-view>
-      </keep-alive>
+      <v-card>
+        <v-card-text>
+          <keep-alive>
+            <router-view></router-view>
+          </keep-alive>
+        </v-card-text>
+      </v-card>
+      
       
     </v-main>
   </v-app>
