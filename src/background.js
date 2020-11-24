@@ -39,39 +39,39 @@ async function createWindow () {
     win.loadURL('app://./index.html')
   }
 
-  //监听获取配置信息事件
-  ipcMain.on('getWeappConfig', (event, arg) => {
-    event.reply('getWeappConfig-reply', electronStore.get('weappConfig'))
-  })
-  //监听设置配置信息事件
-  ipcMain.on('setWeappConfig', (event, arg) => {
-    electronStore.set('weappConfig', arg)
-    event.reply('setWeappConfig-reply', electronStore.get('weappConfig'))
-  })
-  //监听获取小程序列表事件
-  ipcMain.on('getWeappList', (event, arg) => {
-    let weappList = electronStore.get('weappList') || []
-
-    event.reply('getWeappList-reply', weappList)
-  })
-  //监听设置小程序列表
-  ipcMain.on('setWeappList', (event, arg) => {
-    electronStore.set('weappList', arg)
-    event.reply('setWeappList-reply', electronStore.get('weappList'))
-  })
-  //监听获取镜像设置
-  ipcMain.on('getMirrorConfig', (event) => {
-    let mirrorConfig = electronStore.get('mirrorConfig')
-
-    event.reply('getMirrorConfig-reply', mirrorConfig)
-  })
-  //监听设置镜像事件
-  ipcMain.on('setMirrorConfig', (event, arg) => {
-    electronStore.set('mirrorConfig', arg)
-    event.reply('setMirrorConfig-reply', electronStore.get('mirrorConfig'))
-  })
+  
 }
+//监听获取配置信息事件
+ipcMain.on('getWeappConfig', (event, arg) => {
+  event.reply('getWeappConfig-reply', electronStore.get('weappConfig'))
+})
+//监听设置配置信息事件
+ipcMain.on('setWeappConfig', (event, arg) => {
+  electronStore.set('weappConfig', arg)
+  event.reply('setWeappConfig-reply', electronStore.get('weappConfig'))
+})
+//监听获取小程序列表事件
+ipcMain.on('getWeappList', (event, arg) => {
+  let weappList = electronStore.get('weappList') || []
 
+  event.reply('getWeappList-reply', weappList)
+})
+//监听设置小程序列表
+ipcMain.on('setWeappList', (event, arg) => {
+  electronStore.set('weappList', arg)
+  event.reply('setWeappList-reply', electronStore.get('weappList'))
+})
+//监听获取镜像设置
+ipcMain.on('getMirrorConfig', (event) => {
+  let mirrorConfig = electronStore.get('mirrorConfig')
+
+  event.reply('getMirrorConfig-reply', mirrorConfig)
+})
+//监听设置镜像事件
+ipcMain.on('setMirrorConfig', (event, arg) => {
+  electronStore.set('mirrorConfig', arg)
+  event.reply('setMirrorConfig-reply', electronStore.get('mirrorConfig'))
+})
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
   // On macOS it is common for applications and their menu bar

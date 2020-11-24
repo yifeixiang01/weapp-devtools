@@ -22,8 +22,8 @@
                       <v-col  cols="12"  sm="6"  md="6"><v-text-field  v-model="editedItem.appName"  label="英文名"></v-text-field></v-col>
                     </v-row>
                     <v-row>
-                      <v-col  cols="12"  sm="11"  md="11"><v-text-field  v-model="editedItem.path"  label="项目路径"></v-text-field></v-col>
-                      <v-col  cols="12"  sm="1"  md="1"><v-file-input type="file" webkitdirectory hide-input @change="selectFile"></v-file-input></v-col>
+                      <v-col  cols="12"  sm="11"  md="12"><v-text-field  v-model="editedItem.path"  label="项目路径"></v-text-field></v-col>
+                      <!--<v-col  cols="12"  sm="1"  md="1"><v-file-input type="file" webkitdirectory hide-input @change="selectFile"></v-file-input></v-col>-->
                     </v-row>
                   </v-container>
                 </v-card-text>
@@ -125,7 +125,7 @@ export default {
 
       ipcRendererOn('getWeappConfig-reply', value => {
         console.log('获取到配置信息：', value)
-
+        if(!value) this.$router.go('/about')
         this.config = value
       })
     },
@@ -187,7 +187,7 @@ export default {
     //调用adb命令将小程序包push到车机or手机
     pushToMobile(weappName, appName){
       console.log('-----开始将小程序包push到车机')
-      let pathInCar = appName === 'debug'? 'sdcard/moss/weapp': `data/data/com.tencent.wewarmas/files/moss/${weappName}/pkg`
+      let pathInCar = appName === 'debug'? 'sdcard/moss/weapp': `data/data/com.tencent.wecarmas/files/moss/${weappName}/pkg`
       let workerProcess = exec(`adb push ${this.config.weappSavePath}/${appName}.wxapkg ${pathInCar}`, {cwd: './'})
 
       workerProcess.stdout.on('data', data =>{
@@ -199,8 +199,6 @@ export default {
       workerProcess.on('close', code =>{
           if(code == 0){
               console.log('push over')
-          }else{
-              console.log('进程push出错', code)
           }
       })
     },
