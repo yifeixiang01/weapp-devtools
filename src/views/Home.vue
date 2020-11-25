@@ -82,7 +82,9 @@ export default {
   },
   data(){
     return {
-      config: {},
+      config: {
+
+      },
       isSingleSelect: true,
       selected: [],
       headers: [
@@ -92,8 +94,7 @@ export default {
         {text: '', value: 'selected'}
       ],
       weappList : [],
-      defaultItem: {
-      },
+      defaultItem: {},
       dialog: false,
       dialogDelete: false,
       editedIndex: -1,
@@ -118,9 +119,10 @@ export default {
       dialogDelete (val) {
         val || this.closeDelete()
       }
-    },
+  },
   methods: {
     getConfig(){
+      console.log('获取配置信息')
       ipcRenderSend('getWeappConfig')
 
       ipcRendererOn('getWeappConfig-reply', value => {

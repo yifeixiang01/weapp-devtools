@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, BrowserWindow, ipcMain, ipcRenderer } from 'electron'
+import { app, protocol, BrowserWindow, ipcMain } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 
@@ -19,7 +19,6 @@ async function createWindow () {
     width: 800,
     height: 600,
     maximizable: false,
-    icon: 'src/assets/panda.ico',
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
@@ -28,7 +27,6 @@ async function createWindow () {
       nodeIntegration: true
     }
   })
-  
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
@@ -39,10 +37,9 @@ async function createWindow () {
     win.loadURL('app://./index.html')
   }
 
-  
 }
 //监听获取配置信息事件
-ipcMain.on('getWeappConfig', (event, arg) => {
+ipcMain.on('getWeappConfig', (event) => {
   event.reply('getWeappConfig-reply', electronStore.get('weappConfig'))
 })
 //监听设置配置信息事件
@@ -51,7 +48,7 @@ ipcMain.on('setWeappConfig', (event, arg) => {
   event.reply('setWeappConfig-reply', electronStore.get('weappConfig'))
 })
 //监听获取小程序列表事件
-ipcMain.on('getWeappList', (event, arg) => {
+ipcMain.on('getWeappList', (event) => {
   let weappList = electronStore.get('weappList') || []
 
   event.reply('getWeappList-reply', weappList)
@@ -100,21 +97,49 @@ app.on('ready', async () => {
     }
   }
   createWindow()
-
-
 })
+//监听获取配置信息事件
+ipcMain.on('getWeappConfig', (event) => {
+  event.reply('getWeappConfig-reply', electronStore.get('weappConfig'))
+})
+//监听设置配置信息事件
+ipcMain.on('setWeappConfig', (event, arg) => {
+  electronStore.set('weappConfig', arg)
+  event.reply('setWeappConfig-reply', electronStore.get('weappConfig'))
+})
+//监听获取小程序列表事件
+ipcMain.on('getWeappList', (event) => {
+  let weappList = electronStore.get('weappList') || []
 
+  event.reply('getWeappList-reply', weappList)
+})
+//监听设置小程序列表
+ipcMain.on('setWeappList', (event, arg) => {
+  electronStore.set('weappList', arg)
+  event.reply('setWeappList-reply', electronStore.get('weappList'))
+})
+//监听获取镜像设置
+ipcMain.on('getMirrorConfig', (event) => {
+  let mirrorConfig = electronStore.get('mirrorConfig')
+
+  event.reply('getMirrorConfig-reply', mirrorConfig)
+})
+//监听设置镜像事件
+ipcMain.on('setMirrorConfig', (event, arg) => {
+  electronStore.set('mirrorConfig', arg)
+  event.reply('setMirrorConfig-reply', electronStore.get('mirrorConfig'))
+})
 // Exit cleanly on request from parent process in development mode.
-// if (isDevelopment) {
-//   if (process.platform === 'win32') {
-//     process.on('message', (data) => {
-//       if (data === 'graceful-exit') {
-//         app.quit()
-//       }
-//     })
-//   } else {
-//     process.on('SIGTERM', () => {
-//       app.quit()
-//     })
-//   }
-// }
+if (isDevelopment) {
+  if (process.platform === 'win32') {
+    process.on('message', (data) => {
+      if (data === 'graceful-exit') {
+        app.quit()
+      }
+    })
+  } else {
+    process.on('SIGTERM', () => {
+      app.quit()
+    })
+  }
+}
