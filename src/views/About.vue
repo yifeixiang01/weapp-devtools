@@ -27,7 +27,7 @@
 
 <script>
 const fs = window.require('fs')
-let {ipcRenderSend, ipcRendererOn} = require('../main/store.js')
+let {ipcRenderSend, ipcRendererOn} = require('../assets/js/store')
 
 export default {
     data: () => ({

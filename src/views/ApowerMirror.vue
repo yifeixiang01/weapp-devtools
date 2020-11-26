@@ -40,8 +40,8 @@
 </template>
 
 <script>
-let {ipcRenderSend, ipcRendererOn} = require('../main/store.js')
-const Scrcpy = require('./scrcpy')
+let {ipcRenderSend, ipcRendererOn} = require('../assets/js/store')
+const Scrcpy = require('../assets/js/scrcpy')
 const scrcpyTool = new Scrcpy();
 
 export default {

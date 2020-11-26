@@ -19,7 +19,7 @@ async function createWindow () {
     width: 800,
     height: 600,
     maximizable: false,
-    icon: `public/panda.ico`,
+    // icon: `public/panda.ico`,
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
@@ -28,6 +28,14 @@ async function createWindow () {
       nodeIntegration: true
     }
   })
+  if (isDevelopment && !process.env.IS_TEST) {
+    // Install Vue Devtools
+    try {
+      await installExtension(VUEJS_DEVTOOLS)
+    } catch (e) {
+      console.error('Vue Devtools failed to install:', e.toString())
+    }
+  }
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
@@ -89,46 +97,8 @@ app.on('activate', () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
-  if (isDevelopment && !process.env.IS_TEST) {
-    // Install Vue Devtools
-    try {
-      await installExtension(VUEJS_DEVTOOLS)
-    } catch (e) {
-      console.error('Vue Devtools failed to install:', e.toString())
-    }
-  }
+  
   createWindow()
-})
-//监听获取配置信息事件
-ipcMain.on('getWeappConfig', (event) => {
-  event.reply('getWeappConfig-reply', electronStore.get('weappConfig'))
-})
-//监听设置配置信息事件
-ipcMain.on('setWeappConfig', (event, arg) => {
-  electronStore.set('weappConfig', arg)
-  event.reply('setWeappConfig-reply', electronStore.get('weappConfig'))
-})
-//监听获取小程序列表事件
-ipcMain.on('getWeappList', (event) => {
-  let weappList = electronStore.get('weappList') || []
-
-  event.reply('getWeappList-reply', weappList)
-})
-//监听设置小程序列表
-ipcMain.on('setWeappList', (event, arg) => {
-  electronStore.set('weappList', arg)
-  event.reply('setWeappList-reply', electronStore.get('weappList'))
-})
-//监听获取镜像设置
-ipcMain.on('getMirrorConfig', (event) => {
-  let mirrorConfig = electronStore.get('mirrorConfig')
-
-  event.reply('getMirrorConfig-reply', mirrorConfig)
-})
-//监听设置镜像事件
-ipcMain.on('setMirrorConfig', (event, arg) => {
-  electronStore.set('mirrorConfig', arg)
-  event.reply('setMirrorConfig-reply', electronStore.get('mirrorConfig'))
 })
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {

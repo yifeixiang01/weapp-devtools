@@ -73,7 +73,7 @@ const fs = window.require('fs')
 // const { ipcRenderer } = window.require('electron')
 const { exec } = window.require('child_process')
 
-let {ipcRenderSend, ipcRendererOn} = require('../main/store.js')
+let {ipcRenderSend, ipcRendererOn} = require('../assets/js/store')
 
 export default {
   name: 'HelloWorld',
@@ -122,7 +122,6 @@ export default {
   },
   methods: {
     getConfig(){
-      console.log('获取配置信息')
       ipcRenderSend('getWeappConfig')
 
       ipcRendererOn('getWeappConfig-reply', value => {
@@ -133,7 +132,6 @@ export default {
     },
     //读取小程序列表
     getWeappList(){
-      //this.weappList = JSON.parse(fs.readFileSync('src/resource/weapp.json', 'utf8'))
       ipcRenderSend('getWeappList')
 
       ipcRendererOn('getWeappList-reply', value => {
