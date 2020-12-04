@@ -9,6 +9,7 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 import ElectronStore from 'electron-store'
 // import adb from './assets/js/adb'
 const electronStore = new ElectronStore();
+// import adb from './main/adb'
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
@@ -28,11 +29,11 @@ async function createWindow () {
   })
   if (isDevelopment && !process.env.IS_TEST) {
     // Install Vue Devtools
-    try {
-      await installExtension(VUEJS_DEVTOOLS)
-    } catch (e) {
-      console.error('Vue Devtools failed to install:', e.toString())
-    }
+    // try {
+    //   await installExtension(VUEJS_DEVTOOLS)
+    // } catch (e) {
+    //   console.error('Vue Devtools failed to install:', e.toString())
+    // }
   }
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
