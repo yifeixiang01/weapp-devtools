@@ -60,7 +60,7 @@
               </v-data-table>
 
               <div class="text-center">
-                <v-btn  class="ma-2"  outlined  color="indigo" @click="compileFile">开始编译</v-btn>
+                <v-btn  class="ma-2"  outlined  color="indigo" @click="runCompile">开始编译</v-btn>
               </div>
       </v-col>
       <v-col md="3">
@@ -149,42 +149,50 @@ export default {
         this.selected = this.weappList.filter(item => item.selected)
       })
     },
-    //将小程序进行编译，并生成.wxapkg文件
-    compileFile(){
-        if(this.selected.length == 0){
+    //开始运行
+    runCompile(){
+      if(this.selected.length == 0){
           console.log('请先选择小程序')
           return 
         }
         let {name:weappName, appName, path:projectPath} = this.selected[0];
-        console.log(`开始编译“${weappName}”小程序`)
+        let {weappPath, wechatDevtoolsPath} = this.config;
+        this.compileFile(projectPath, wechatDevtoolsPath, weappPath)
+    },
+    //将小程序进行编译，并生成.wxapkg文件
+    compileFile(weappName, projectPath, wechatDevtoolsPath, weappPath){
+        return new Promise((resolve, reject) => {
+          console.log(`开始编译“${weappName}”小程序`)
 
-        let workerProcess = exec(`cli auto-preview --project ${projectPath}`, {cwd: this.config.wechatDevtoolsPath})
+          let workerProcess = exec(`cli auto-preview --project ${projectPath}`, {cwd: wechatDevtoolsPath})
 
-        workerProcess.stdout.on('data', data =>{
-            console.log('stdout', data)
+          workerProcess.stdout.on('data', data =>{
+              console.log('stdout', data)
+          })
+          workerProcess.stderr.on('data', data =>{
+              console.log('stderr', data)
+          })
+          workerProcess.on('close', code => {
+              console.log('编译', code)
+              if(code == 0){
+                fs.watch(weappPath, (eventType, filename) => {
+                  console.log('文件变化', eventType, filename)
+                  if(eventType == 'rename' || eventType == 'change'){
+                    clearTimeout(this.timer)
+                    this.timer = setTimeout(() => {
+                      this.copyFile(weappName, appName)
+                    }, 200);
+
+                  }
+                })
+
+              }else{
+                console.log('编译失败')
+              }
+          })
+
         })
-        workerProcess.stderr.on('data', data =>{
-            console.log('stderr', data)
-        })
-        workerProcess.on('close', code => {
-            console.log('编译', code)
-            if(code == 0){
-              fs.watch(this.config.weappPath, (eventType, filename) => {
-                console.log('文件变化', eventType, filename)
-                if(eventType == 'rename' || eventType == 'change'){
-                  clearTimeout(this.timer)
-                  this.timer = setTimeout(() => {
-                    this.copyFile(weappName, appName)
-                  }, 200);
-
-                }
-              })
-
-            }else{
-              console.log('编译失败')
-            }
-        })
-
+        
     },
     //将_APP_.wxapkg copy到当前目录下，并修改文件名
     copyFile(weappName, appName){
