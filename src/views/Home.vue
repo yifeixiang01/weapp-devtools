@@ -1,66 +1,75 @@
 <template>
   <div>
+    <v-row>
+      <v-col md="9">
+        <v-data-table  :headers="headers"  :items="weappList" item-key="name" hide-default-footer :show-select="true" v-model="selected" :single-select="isSingleSelect" @item-selected="selectWeapp">
+                <template v-slot:top>
+                  <v-toolbar flat>
+                    <v-spacer></v-spacer>
 
-      <v-data-table  :headers="headers"  :items="weappList" item-key="name" hide-default-footer :show-select="true" v-model="selected" :single-select="isSingleSelect" @item-selected="selectWeapp">
-        <template v-slot:top>
-          <v-toolbar flat>
-            <v-spacer></v-spacer>
+                    <v-dialog  v-model="dialog"  max-width="600px">
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-btn  color="primary"  dark  class="mb-2" small  v-bind="attrs"  v-on="on">添加小程序</v-btn>
+                      </template>
+                      <v-card>
+                        <v-card-title>
+                          <span class="headline">{{ formTitle }}</span>
+                        </v-card-title>
 
-            <v-dialog  v-model="dialog"  max-width="600px">
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn  color="primary"  dark  class="mb-2" small  v-bind="attrs"  v-on="on">添加小程序</v-btn>
-              </template>
-              <v-card>
-                <v-card-title>
-                  <span class="headline">{{ formTitle }}</span>
-                </v-card-title>
+                        <v-card-text>
+                          <v-container>
+                            <v-row>
+                              <v-col cols="12"  sm="6"  md="6"><v-text-field  v-model="editedItem.name"  label="小程序"></v-text-field></v-col>
+                              <v-col  cols="12"  sm="6"  md="6"><v-text-field  v-model="editedItem.appName"  label="英文名"></v-text-field></v-col>
+                            </v-row>
+                            <v-row>
+                              <v-col  cols="12"  sm="11"  md="11"><v-text-field  v-model="editedItem.path"  label="项目路径"></v-text-field></v-col>
+                              <v-col  cols="12"  sm="1"  md="1"><v-file-input type="file" webkitdirectory hide-input @change="selectFile"></v-file-input></v-col>
+                            </v-row>
+                          </v-container>
+                        </v-card-text>
 
-                <v-card-text>
-                  <v-container>
-                    <v-row>
-                      <v-col cols="12"  sm="6"  md="6"><v-text-field  v-model="editedItem.name"  label="小程序"></v-text-field></v-col>
-                      <v-col  cols="12"  sm="6"  md="6"><v-text-field  v-model="editedItem.appName"  label="英文名"></v-text-field></v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col  cols="12"  sm="11"  md="12"><v-text-field  v-model="editedItem.path"  label="项目路径"></v-text-field></v-col>
-                      <!--<v-col  cols="12"  sm="1"  md="1"><v-file-input type="file" webkitdirectory hide-input @change="selectFile"></v-file-input></v-col>-->
-                    </v-row>
-                  </v-container>
-                </v-card-text>
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn  color="blue darken-1"  text  @click="close">取消</v-btn>
+                          <v-btn  color="blue darken-1"  text  @click="save">保存</v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
 
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn  color="blue darken-1"  text  @click="close">取消</v-btn>
-                  <v-btn  color="blue darken-1"  text  @click="save">保存</v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
+                    <v-dialog v-model="dialogDelete" max-width="500px">
+                      <v-card>
+                        <v-card-title class="headline">确定删除“{{editedItem.name}}”小程序吗?</v-card-title>
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn color="blue darken-1" text @click="closeDelete">取消</v-btn>
+                          <v-btn color="blue darken-1" text @click="deleteItemConfirm">确定</v-btn>
+                          <v-spacer></v-spacer>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
 
-            <v-dialog v-model="dialogDelete" max-width="500px">
-              <v-card>
-                <v-card-title class="headline">确定删除“{{editedItem.name}}”小程序吗?</v-card-title>
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn color="blue darken-1" text @click="closeDelete">取消</v-btn>
-                  <v-btn color="blue darken-1" text @click="deleteItemConfirm">确定</v-btn>
-                  <v-spacer></v-spacer>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-
-          </v-toolbar>
-        </template>
+                  </v-toolbar>
+                </template>
 
 
-        <template v-slot:[`item.selected`]="{ item }">
-          <v-icon small  class="mr-2"  @click="editItem(item)">mdi-pencil</v-icon>
-          <v-icon  small  @click="deleteItem(item)">mdi-delete</v-icon>
-        </template>
-      </v-data-table>
+                <template v-slot:[`item.selected`]="{ item }">
+                  <v-icon small  class="mr-2"  @click="editItem(item)">mdi-pencil</v-icon>
+                  <v-icon  small  @click="deleteItem(item)">mdi-delete</v-icon>
+                </template>
+              </v-data-table>
 
-      <div class="text-center">
-        <v-btn  class="ma-2"  outlined  color="indigo" @click="compileFile">开始编译</v-btn>
-      </div>
+              <div class="text-center">
+                <v-btn  class="ma-2"  outlined  color="indigo" @click="compileFile">开始编译</v-btn>
+              </div>
+      </v-col>
+      <v-col md="3">
+        <div class="debug-area" @drop="onDrop($event)" @dragover="onDragover($event)">
+          将小程序包拖拽到此处
+        </div>
+      </v-col>
+    </v-row>
+      
 
   </div>
 
@@ -70,7 +79,7 @@
 <script>
 
 const fs = window.require('fs')
-// const { ipcRenderer } = window.require('electron')
+
 const { exec } = window.require('child_process')
 
 let {ipcRenderSend, ipcRendererOn} = require('../assets/js/store')
@@ -204,7 +213,6 @@ export default {
     },
     //选择小程序
     selectWeapp(row){
-      console.log(this.selected)
       this.weappList.forEach(item => {
         if(item.name == row.item.name){
           item.selected = true
@@ -242,17 +250,23 @@ export default {
       this.dialog = false
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedIndex = -1
       })
-      this.editedIndex = -1
+      
     },
     save () {
-      console.log(this.editedIndex)
+      let {name, appName, path} = this.editedItem
+
       if(this.editedIndex > -1){
+        console.log(0)
         Object.assign(this.weappList[this.editedIndex], this.editedItem)
-      }else{
+      }else if(this.weappList.findIndex(item => item.name == name) != -1 ){
+        alert(name +'已存在')
+      }else if(name && appName && path){
         this.weappList.push(this.editedItem)
+        ipcRenderSend('setWeappList', this.weappList)
       }
-      ipcRenderSend('setWeappList', this.weappList)
+      
       this.close()
     },
     //选择文件
@@ -275,6 +289,21 @@ export default {
         }
       }
 
+    },
+    onDrop(e) {
+      console.log('drop', e);
+      e.preventDefault();
+      var efile = e.dataTransfer.files[0];
+      console.log(efile.path);
+      if(efile.findIndex('.wxapkg')>-1){
+
+        this.pushToMobile(efile,)
+      }
+      
+      return false;
+    },
+    onDragover(e){
+      e.preventDefault();
     }
   }
 }
@@ -282,13 +311,12 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.wrap{
+.debug-area{
   width: 100%;
   height: 100%;
-}
-.weapp-item{
-  font-size: 14px;
-  line-height: 20px;
-  text-align: left;
+  background: #eee;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

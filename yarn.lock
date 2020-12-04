@@ -2134,7 +2134,7 @@ bluebird@^3.1.1, bluebird@^3.5.5:
 
 bluebird@~2.9.24:
   version "2.9.34"
-  resolved "https://registry.npm.taobao.org/bluebird/download/bluebird-2.9.34.tgz?cache=0&sync_timestamp=1586263933818&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fbluebird%2Fdownload%2Fbluebird-2.9.34.tgz#2f7b4ec80216328a9fddebdf69c8d4942feff7d8"
+  resolved "https://registry.npm.taobao.org/bluebird/download/bluebird-2.9.34.tgz#2f7b4ec80216328a9fddebdf69c8d4942feff7d8"
   integrity sha1-L3tOyAIWMoqf3evfacjUlC/v99g=
 
 bn.js@^4.0.0, bn.js@^4.1.0, bn.js@^4.4.0:
@@ -6629,7 +6629,7 @@ node-forge@^0.10.0:
 
 node-forge@^0.7.1:
   version "0.7.6"
-  resolved "https://registry.npm.taobao.org/node-forge/download/node-forge-0.7.6.tgz?cache=0&sync_timestamp=1599012486854&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fnode-forge%2Fdownload%2Fnode-forge-0.7.6.tgz#fdf3b418aee1f94f0ef642cd63486c77ca9724ac"
+  resolved "https://registry.npm.taobao.org/node-forge/download/node-forge-0.7.6.tgz?cache=0&sync_timestamp=1599010730714&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fnode-forge%2Fdownload%2Fnode-forge-0.7.6.tgz#fdf3b418aee1f94f0ef642cd63486c77ca9724ac"
   integrity sha1-/fO0GK7h+U8O9kLNY0hsd8qXJKw=
 
 node-ipc@^9.1.1:
@@ -8715,7 +8715,7 @@ split2@^3.0.0:
 
 split@~0.3.3:
   version "0.3.3"
-  resolved "https://registry.npm.taobao.org/split/download/split-0.3.3.tgz?cache=0&sync_timestamp=1572612280623&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fsplit%2Fdownload%2Fsplit-0.3.3.tgz#cd0eea5e63a211dfff7eb0f091c4133e2d0dd28f"
+  resolved "https://registry.npm.taobao.org/split/download/split-0.3.3.tgz#cd0eea5e63a211dfff7eb0f091c4133e2d0dd28f"
   integrity sha1-zQ7qXmOiEd//frDwkcQTPi0N0o8=
   dependencies:
     through "2"

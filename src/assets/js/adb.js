@@ -1,28 +1,32 @@
 import adb from 'adbkit'
-console.log()
+
 const client = adb.createClient()
 // const debug = require('debug')('scrcpy')
-
+console.log('adb -------------')
 const onDevices = sender => {
+	console.log('------------------adb', sender)
 	client.trackDevices()
 		.then(function (tracker) {
 			tracker.on('add', function (device) {
-				console.log(device)
+				console.log('Device %s was plugged in', device.id)
 				// debug('Device %s was plugged in', device.id)
 				client.listDevices().then(function (devices) {
+					console.log(devices)
 					// debug(devices)
 					sender.send('devices', devices)
 				})
 			})
 			tracker.on('remove', function (device) {
-				console.log(device)
+				console.log('Device %s was unplugged', device.id)
 				// debug('Device %s was unplugged', device.id)
 				client.listDevices().then(function (devices) {
 					// debug(devices)
+					console.log(devices)
 					sender.send('devices', devices)
 				})
 			})
 			tracker.on('end', function () {
+				console.log('Tracking stopped')
 				// debug('Tracking stopped')
 			})
 		})
