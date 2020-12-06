@@ -79,7 +79,7 @@
 <script>
 
 const fs = window.require('fs')
-const { exec } = window.require('child_process')
+import {$compileFile, $copyFile, $pushToMobile} from '../assets/js/tools'
 const  ElectronStore = window.require('electron-store')
 const electronStore = new ElectronStore();
 
@@ -172,109 +172,20 @@ export default {
       }
       let {name:weappName, appName, path:projectPath} = this.selected[0];
 
-      this.compileFile(weappName, projectPath, weappCompilePath, wechatDevtoolsPath)
+      $compileFile(weappName, projectPath, weappCompilePath, wechatDevtoolsPath)
         .then(() => {
           let resourcePath = `${weappCompilePath}/__APP__.wxapkg`
           let aimPath = `${weappSavePath}/${appName}.wxapkg`
 
-          return this.copyFile(resourcePath, aimPath)
+          return $copyFile(resourcePath, aimPath)
         })
         .then(() => {
           let pkgPath = `${weappSavePath}/${appName}.wxapkg`
-          return this.pushToMobile(pkgPath, weappName, appName)
+          return $pushToMobile(pkgPath, weappName, appName)
         })
         .catch((err) => {
           console.error(`运行出错:${err}`)
         })
-    },
-    //将小程序进行编译，并生成.wxapkg文件
-    compileFile(weappName, projectPath, weappCompilePath, wechatDevtoolsPath){
-        return new Promise((resolve, reject) => {
-          console.log(`开始编译“${weappName}”小程序`)
-          // fs.unlinkSync(`${weappCompilePath}/__APP__.wxapkg`)
-          let workerProcess = exec(`cli auto-preview --project ${projectPath}`, {cwd: wechatDevtoolsPath})
-
-          workerProcess.stdout.on('data', data =>{
-              console.log('stdout', data)
-          })
-          workerProcess.stderr.on('data', data =>{
-              console.log('stderr', data)
-              // reject()
-          })
-          workerProcess.on('close', code => {
-              console.log('编译结束', code)
-              if(code == 0){
-                fs.watch(`${weappCompilePath}/__APP__.wxapkg`, (eventType, filename) => {
-                  console.log('文件变化', eventType, filename)
-                  if(eventType == 'change'){
-                    clearTimeout(this.timer)
-                    this.timer = setTimeout(() => {
-
-                      resolve()
-                    }, 300);
-                  }
-                })
-              }else{
-                console.log(`编译失败,code=${code}`)
-                reject('编译失败，code=${code}');
-              }
-          })
-
-        })
-        
-    },
-    //将_APP_.wxapkg copy到当前目录下，并修改文件名
-    copyFile(resourcePath, aimPath){
-      return new Promise((resolve, reject) => {
-        console.log('------开始copy文件')
-        console.log(`--源文件:${resourcePath}，目标:${aimPath}`)
-        if(!fs.existsSync(resourcePath)){
-          console.log('不存在此文件', resourcePath)
-          reject(`拷贝文件失败，不存在此文件${resourcePath}`)
-        }else{
-          fs.copyFile(resourcePath, aimPath, (data)=>{
-            console.log('--拷贝文件完成--', data)
-            if(!fs.existsSync(aimPath)){
-            console.log('不存在此文件', resourcePath)
-            reject(`拷贝文件失败，不存在此文件${resourcePath}`)
-            }else{
-              resolve()
-            }
-            
-          })
-        }
-        
-        
-      })
-        
-    },
-    //调用adb命令将小程序包push到车机or手机
-    pushToMobile(pkgPath, weappName, appName){
-      return new Promise((resolve, reject) => {
-        console.log('-----开始将小程序包push到车机')
-        let pathInCar = (appName === 'debug')? 'sdcard/moss/weapp': `data/data/com.tencent.wecarmas/files/moss/${weappName}/pkg`
-
-        let workerProcess = exec(`adb push ${pkgPath} ${pathInCar}`, {cwd: './'})
-
-        workerProcess.stdout.on('data', data =>{
-            console.log('push stdout', data)
-            if(data.indexOf('Permission denied') != -1){
-              console.log('Permission denied', data.indexOf('Permission denied'))
-              reject('Permission denied: adb没有push权限')
-            }
-        })
-        workerProcess.stderr.on('data', data =>{
-            console.log('push stderr', data)
-        })
-        workerProcess.on('close', code =>{
-          console.log('push close', code)
-            if(code == 0){
-                console.log('------完成push小程序包到车机')
-                resolve()
-            }
-        })
-      }) 
-      
     },
     //选择小程序
     selectWeapp(row){
@@ -371,7 +282,7 @@ export default {
         }
         let {name:weappName, appName} = this.selected[0];
 
-        this.pushToMobile(pkgPath, weappName, appName).then(()=> {
+        $pushToMobile(pkgPath, weappName, appName).then(()=> {
           alert('push 成功')
         }).catch(err => {
           console.error(`push 失败: ${err}`)

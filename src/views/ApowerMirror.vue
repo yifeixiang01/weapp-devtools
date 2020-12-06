@@ -1,30 +1,33 @@
 <template>
     <v-form  ref="form"  v-model="valid"  lazy-validation>
         
-        <v-row><v-col cols="10"><v-text-field  v-model="windowSetting.windowTitle" outlined dense label="窗口标题" hint="默认为设备名称" persistent-hint></v-text-field></v-col></v-row>
-        <v-row><v-col cols="10"><v-slider min="0"  max="1920" v-model="resolution " step="10"  label="画面分辨率"></v-slider></v-col><v-col><span>{{resolution}}</span></v-col></v-row>
-        <v-row><v-col cols="10"> <v-slider  v-model="bitRate"  :max="1024" step="10"  label="传输比特率"  class="align-center"></v-slider></v-col><v-col><span>{{bitRate}}</span></v-col></v-row>
+        <v-row><v-col cols="10"><v-text-field  v-model="mirrorConfig.windowTitle" outlined dense label="窗口标题" hint="默认为设备名称" persistent-hint></v-text-field></v-col></v-row>
+        <!-- <v-row><v-col cols="10"><v-slider min="0"  max="1920" v-model="resolution " step="10"  label="画面分辨率"></v-slider></v-col><v-col><span>{{resolution}}</span></v-col></v-row>
+        <v-row><v-col cols="10"> <v-slider  v-model="bitRate"  :max="1024" step="10"  label="传输比特率"  class="align-center"></v-slider></v-col><v-col><span>{{bitRate}}</span></v-col></v-row> -->
         <v-row>
           <v-col cols="3">
-            <v-checkbox v-model="windowSetting.alwaysOnUp" label="窗口置顶"></v-checkbox>
+            <v-checkbox v-model="mirrorConfig.alwaysOnUp" label="窗口置顶"></v-checkbox>
           </v-col>
           <v-col  cols="3">
-            <v-checkbox v-model="windowSetting.fullscreen"  label="全屏启动"></v-checkbox>
+            <v-checkbox v-model="mirrorConfig.fullscreen"  label="全屏启动"></v-checkbox>
           </v-col>
           <v-col  cols="3">
-            <v-checkbox v-model="windowSetting.screenOff"  label="黑屏启动"></v-checkbox>
+            <v-checkbox v-model="mirrorConfig.screenOff"  label="黑屏启动"></v-checkbox>
           </v-col>
           <v-col  cols="3">
-            <v-checkbox v-model="windowSetting.borderless"  label="无边框"></v-checkbox>
+            <v-checkbox v-model="mirrorConfig.borderless"  label="无边框"></v-checkbox>
           </v-col>
           <v-col  cols="3">
-            <v-checkbox v-model="windowSetting.stayAwake"  label="保持常亮"></v-checkbox>
+            <v-checkbox v-model="mirrorConfig.stayAwake"  label="保持常亮"></v-checkbox>
           </v-col>
           <v-col  cols="3">
-            <v-checkbox v-model="windowSetting.showTouches"  label="显示触摸轨迹"></v-checkbox>
+            <v-checkbox v-model="mirrorConfig.showTouches"  label="显示触摸轨迹"></v-checkbox>
           </v-col>
           <v-col  cols="3">
-            <v-checkbox v-model="windowSetting.disableScreensaver"  label="关闭屏保"></v-checkbox>
+            <v-checkbox v-model="mirrorConfig.disableScreensaver"  label="关闭屏保"></v-checkbox>
+          </v-col>
+          <v-col  cols="3">
+            <v-checkbox v-model="mirrorConfig.record"  label="开启录屏"></v-checkbox>
           </v-col>
           <!-- <v-col cols="4">
             <v-checkbox v-model="selected"  label="悬浮工具栏"  value="John2"></v-checkbox>
@@ -41,13 +44,14 @@
 </template>
 
 <script>
-let {ipcRenderSend, ipcRendererOn} = require('../assets/js/store')
 const Scrcpy = require('../assets/js/scrcpy')
 const scrcpyTool = new Scrcpy();
+const  ElectronStore = window.require('electron-store')
+const electronStore = new ElectronStore();
 
 export default {
   data: ()=>({
-    windowSetting: {
+    mirrorConfig: {
       windowTitle: '',                     //窗口标题
       alwaysOnUp: false,                   //保持最前
       fullscreen: false,                   //全屏启动
@@ -56,6 +60,7 @@ export default {
       stayAwake: false,                    //屏幕常量
       showTouches: false,                  //显示触摸轨迹
       disableScreensaver: false,           //关闭屏幕保护
+      record: false,                       //投屏的时候进行录屏
     },
     valid: true,
     resolution: 1024,
@@ -67,21 +72,15 @@ export default {
   },
   methods: {
     getConfig(){
-      ipcRenderSend('getMirrorConfig')
-
-      ipcRendererOn('getMirrorConfig-reply', value => {
-        console.log('获取到镜像配置', value)
-        if(value){
-          this.windowSetting = value
-        }
-        
-      })
+      this.mirrorConfig = electronStore.get('mirrorConfig')
+      console.log('获取镜像配置', this.mirrorConfig)
     },
     start(){
-      scrcpyTool.start(this.windowSetting) 
+      let {weappSavePath} = electronStore.get('weappConfig')
+      scrcpyTool.start(this.mirrorConfig, weappSavePath) 
     },
     submit(){
-      ipcRenderSend('setMirrorConfig', this.windowSetting)
+      electronStore.set('mirrorConfig', this.mirrorConfig)
     }
   }
 }

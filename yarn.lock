@@ -6670,11 +6670,7 @@ node-forge@^0.10.0:
 
 node-forge@^0.7.1:
   version "0.7.6"
-<<<<<<< HEAD
-  resolved "https://registry.npm.taobao.org/node-forge/download/node-forge-0.7.6.tgz?cache=0&sync_timestamp=1599010730714&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fnode-forge%2Fdownload%2Fnode-forge-0.7.6.tgz#fdf3b418aee1f94f0ef642cd63486c77ca9724ac"
-=======
   resolved "https://registry.npm.taobao.org/node-forge/download/node-forge-0.7.6.tgz#fdf3b418aee1f94f0ef642cd63486c77ca9724ac"
->>>>>>> 修改adb.js
   integrity sha1-/fO0GK7h+U8O9kLNY0hsd8qXJKw=
 
 node-ipc@^9.1.1:
@@ -10153,6 +10149,11 @@ xtend@^4.0.0, xtend@~4.0.0, xtend@~4.0.1:
   version "4.0.2"
   resolved "https://registry.npm.taobao.org/xtend/download/xtend-4.0.2.tgz#bb72779f5fa465186b1f438f674fa347fdb5db54"
   integrity sha1-u3J3n1+kZRhrH0OPZ0+jR/2121Q=
+
+xterm@^4.9.0:
+  version "4.9.0"
+  resolved "https://registry.npm.taobao.org/xterm/download/xterm-4.9.0.tgz#7a4c097a433d565339b5533b468bbc60c6c87969"
+  integrity sha1-ekwJekM9VlM5tVM7Rou8YMbIeWk=
 
 y18n@^4.0.0:
   version "4.0.0"
