@@ -7,7 +7,6 @@ import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 import ElectronStore from 'electron-store'
-// import adb from './assets/js/adb'
 const electronStore = new ElectronStore();
 // import adb from './main/adb'
 // Scheme must be registered before the app is ready

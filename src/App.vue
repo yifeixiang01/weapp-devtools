@@ -19,15 +19,7 @@
 
 
     <v-main>
-      <v-card>
-        <v-card-text>
-          <keep-alive>
-            <router-view></router-view>
-          </keep-alive>
-        </v-card-text>
-      </v-card>
-      
-      
+      <router-view></router-view>
     </v-main>
   </v-app>
 </template>

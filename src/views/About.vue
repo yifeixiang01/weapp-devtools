@@ -9,7 +9,7 @@
       </v-row>
       <v-row>
         <v-col>
-          <v-text-field label="小程序包编译目录" :rules="weappRules" v-model="config.weappPath"></v-text-field>
+          <v-text-field label="小程序包编译目录" :rules="weappRules" v-model="config.weappCompilePath"></v-text-field>
         </v-col>
       </v-row>
       <v-row>
@@ -27,7 +27,9 @@
 
 <script>
 const fs = window.require('fs')
-let {ipcRenderSend, ipcRendererOn} = require('../assets/js/store')
+
+const  ElectronStore = window.require('electron-store')
+const electronStore = new ElectronStore();
 
 export default {
     data: () => ({
@@ -79,13 +81,8 @@ export default {
     },
     methods: {
       getConfig(){
-        ipcRenderSend('getWeappConfig')
-
-        ipcRendererOn('getWeappConfig-reply', value => {
-          console.log('获取到配置信息：', value)
-
-          this.config = value || {}
-        })
+        this.config = electronStore.get('weappConfig') || {}
+        console.log('配置信息', this.config)
       },
       //选择文件
       selectFile(file){
@@ -98,15 +95,15 @@ export default {
         this.$refs.form.validate()
         //转化路径格式
         let wechatDevtoolsPath = this.config.wechatDevtoolsPath.replace(/\\/g, '/')
-        let weappPath = this.config.weappPath.replace(/\\/g, '/')
+        let weappCompilePath = this.config.weappCompilePath.replace(/\\/g, '/')
         let weappSavePath = this.config.weappSavePath.replace(/\\/g, '/')
 
-        let index = weappPath.indexOf('__APP__')
+        let index = weappCompilePath.indexOf('__APP__')
         if(index != -1){
-          weappPath = weappPath.slice(0, index)
+          weappCompilePath = weappCompilePath.slice(0, index)
         } 
 
-        ipcRenderSend('setWeappConfig', {wechatDevtoolsPath, weappPath, weappSavePath})
+        electronStore.set('weappConfig', {wechatDevtoolsPath, weappCompilePath, weappSavePath})
       }
     }
   }
