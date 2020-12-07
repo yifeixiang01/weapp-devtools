@@ -3,65 +3,65 @@
     <v-row>
       <v-col md="9">
         <v-data-table  :headers="headers"  :items="weappList" item-key="name" hide-default-footer :show-select="true" v-model="selected" :single-select="isSingleSelect" @item-selected="selectWeapp">
-                <template v-slot:top>
-                  <v-toolbar flat>
+          <template v-slot:top>
+            <v-toolbar flat>
+              <v-spacer></v-spacer>
+
+              <v-dialog  v-model="dialog"  max-width="600px">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn  color="primary"  dark  class="mb-2" small  v-bind="attrs"  v-on="on">添加小程序</v-btn>
+                </template>
+                <v-card>
+                  <v-card-title>
+                    <span class="headline">{{ formTitle }}</span>
+                  </v-card-title>
+
+                  <v-card-text>
+                    <v-container>
+                      <v-row>
+                        <v-col cols="12"  sm="6"  md="6"><v-text-field  v-model="editedItem.name"  label="小程序"></v-text-field></v-col>
+                        <v-col  cols="12"  sm="6"  md="6"><v-text-field  v-model="editedItem.appName"  label="英文名"></v-text-field></v-col>
+                      </v-row>
+                      <v-row>
+                        <v-col  cols="12"  sm="11"  md="11"><v-text-field  v-model="editedItem.path"  label="项目路径"></v-text-field></v-col>
+                        <v-col  cols="12"  sm="1"  md="1"><v-file-input type="file" webkitdirectory hide-input @change="selectFile"></v-file-input></v-col>
+                      </v-row>
+                    </v-container>
+                  </v-card-text>
+
+                  <v-card-actions>
                     <v-spacer></v-spacer>
+                    <v-btn  color="blue darken-1"  text  @click="close">取消</v-btn>
+                    <v-btn  color="blue darken-1"  text  @click="save">保存</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
 
-                    <v-dialog  v-model="dialog"  max-width="600px">
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-btn  color="primary"  dark  class="mb-2" small  v-bind="attrs"  v-on="on">添加小程序</v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title>
-                          <span class="headline">{{ formTitle }}</span>
-                        </v-card-title>
+              <v-dialog v-model="dialogDelete" max-width="500px">
+                <v-card>
+                  <v-card-title class="headline">确定删除“{{editedItem.name}}”小程序吗?</v-card-title>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" text @click="closeDelete">取消</v-btn>
+                    <v-btn color="blue darken-1" text @click="deleteItemConfirm">确定</v-btn>
+                    <v-spacer></v-spacer>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
 
-                        <v-card-text>
-                          <v-container>
-                            <v-row>
-                              <v-col cols="12"  sm="6"  md="6"><v-text-field  v-model="editedItem.name"  label="小程序"></v-text-field></v-col>
-                              <v-col  cols="12"  sm="6"  md="6"><v-text-field  v-model="editedItem.appName"  label="英文名"></v-text-field></v-col>
-                            </v-row>
-                            <v-row>
-                              <v-col  cols="12"  sm="11"  md="11"><v-text-field  v-model="editedItem.path"  label="项目路径"></v-text-field></v-col>
-                              <v-col  cols="12"  sm="1"  md="1"><v-file-input type="file" webkitdirectory hide-input @change="selectFile"></v-file-input></v-col>
-                            </v-row>
-                          </v-container>
-                        </v-card-text>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn  color="blue darken-1"  text  @click="close">取消</v-btn>
-                          <v-btn  color="blue darken-1"  text  @click="save">保存</v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
-
-                    <v-dialog v-model="dialogDelete" max-width="500px">
-                      <v-card>
-                        <v-card-title class="headline">确定删除“{{editedItem.name}}”小程序吗?</v-card-title>
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn color="blue darken-1" text @click="closeDelete">取消</v-btn>
-                          <v-btn color="blue darken-1" text @click="deleteItemConfirm">确定</v-btn>
-                          <v-spacer></v-spacer>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
-
-                  </v-toolbar>
-                </template>
+            </v-toolbar>
+          </template>
 
 
-                <template v-slot:[`item.selected`]="{ item }">
-                  <v-icon small  class="mr-2"  @click="editItem(item)">mdi-pencil</v-icon>
-                  <v-icon  small  @click="deleteItem(item)">mdi-delete</v-icon>
-                </template>
-              </v-data-table>
+          <template v-slot:[`item.selected`]="{ item }">
+            <v-icon small  class="mr-2"  @click="editItem(item)">mdi-pencil</v-icon>
+            <v-icon  small  @click="deleteItem(item)">mdi-delete</v-icon>
+          </template>
+        </v-data-table>
 
-              <div class="text-center">
-                <v-btn  class="ma-2"  outlined  color="indigo" @click="runCompile">开始编译</v-btn>
-              </div>
+        <div class="text-center">
+          <v-btn  class="ma-2"  outlined  color="indigo" @click="runCompile">开始编译</v-btn>
+        </div>
       </v-col>
       <v-col md="3">
         <v-sheet elevation="2" class="mx-auto" width="200" height="300" @drop="onDrop($event)" @dragover="onDragover($event)">
@@ -72,14 +72,12 @@
     <v-btn @click="showToast">toast</v-btn>
 
   </div>
-
-
 </template>
 
 <script>
 
 const fs = window.require('fs')
-import {$compileFile, $copyFile, $pushToMobile, $isExistFileInDevice} from '../assets/js/tools'
+import {$compileFile, $copyFile, $pushToMobile, $isExistFileInDevice, $getDevices} from '../assets/js/tools'
 const  ElectronStore = window.require('electron-store')
 const electronStore = new ElectronStore();
 
@@ -119,7 +117,6 @@ export default {
   },
   created() {
     this.getWeappList();
-    
   },
   computed: {
     formTitle () {
@@ -178,13 +175,16 @@ export default {
           let aimPath = `${weappSavePath}/${appName}.wxapkg`
 
           return $copyFile(resourcePath, aimPath)
+        }).then(()=>{
+          return $getDevices()
         })
         .then(() => {
           let pkgPath = `${weappSavePath}/${appName}.wxapkg`
           return $pushToMobile(pkgPath, weappName, appName)
         })
         .catch((err) => {
-          console.error(`运行出错:${err}`)
+          //console.error(`运行出错:${err}`)
+          alert(err)
         })
     },
     //选择小程序
@@ -281,12 +281,15 @@ export default {
           return 
         }
         let {name:weappName, appName} = this.selected[0];
-
-        $pushToMobile(pkgPath, weappName, appName).then(()=> {
+        $getDevices()
+        .then(()=> {
+          return $pushToMobile(pkgPath, weappName, appName)
+        })
+        .then(()=> {
           alert('push 成功')
         }).catch(err => {
           console.error(`push 失败: ${err}`)
-          alert(`push 失败: ${err}`)
+          alert(err)
         })
       }else{
         alert('请放置正确的小程序包')
@@ -307,12 +310,12 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.debug-area{
-  width: 100%;
-  height: 100%;
-  background: #eee;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  .debug-area{
+    width: 100%;
+    height: 100%;
+    background: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 </style>

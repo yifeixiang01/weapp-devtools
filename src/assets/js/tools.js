@@ -20,6 +20,9 @@ function $compileFile(weappName, projectPath, weappCompilePath, wechatDevtoolsPa
       })
       workerProcess.stderr.on('data', data =>{
           console.log('stderr', data)
+          if(data.indexOf('×') > -1){
+            reject('请先在微信开发工具上打开服务端口')
+          }
       })
       workerProcess.on('close', code => {
         let timer = null;
@@ -52,13 +55,15 @@ function $copyFile(resourcePath, aimPath){
     console.log(`--源文件:${resourcePath}，目标:${aimPath}`)
     if(!fs.existsSync(resourcePath)){
       console.log('不存在此文件', resourcePath)
-      reject(`拷贝文件失败，不存在此文件${resourcePath}`)
+
+      reject(`拷贝失败，不存在此文件:${resourcePath}`)
     }else{
       fs.copyFile(resourcePath, aimPath, (data)=>{
         console.log('--拷贝文件完成--', data)
         if(!fs.existsSync(aimPath)){
         console.log('不存在此文件', resourcePath)
-        reject(`拷贝文件失败，不存在此文件${resourcePath}`)
+
+        reject(`拷贝失败，不存在此文件:${resourcePath}`)
         }else{
           resolve()
         }
@@ -80,9 +85,12 @@ function $pushToMobile(pkgPath, weappName, appName){
   
       workerProcess.stdout.on('data', data =>{
           console.log('push stdout', data)
-          if(data.indexOf('Permission denied') != -1){
+          if(data.indexOf('Permission denied') > -1){
             console.log('Permission denied', data.indexOf('Permission denied'))
             reject('Permission denied: adb没有push权限')
+          }
+          if(data.indexOf('no devices/emulators') > -1){
+            reject('设备连接中断，push失败')
           }
       })
       workerProcess.stderr.on('data', data =>{
@@ -104,26 +112,42 @@ function $pushToMobile(pkgPath, weappName, appName){
 }
 //启动应用
 function $startApp(packageName){
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
         exec(`adb shell am start ${packageName}`, (error, stdout, stderr) => {
             if(error){
                 console.log('error', error)
             }
             console.log('stdout',stdout)
+            if(stdout.indexOf('no devices/emulators') > -1){
+              reject('设备连接中断')
+            }
             console.log('stderr', stderr)
+            resolve()
         })
-        resolve()
+        
     })
     
 }
 //关闭应用
 function $closeApp(appName){
+  return new Promise((resolve, reject) => {
     console.log('关闭应用：'+ appName)
-    exec(`adb shell am force-stop ${appName}`)
+    exec(`adb shell am force-stop ${appName}`, (error, stdout, stderr) => {
+      if(error){
+        console.log('error', error)
+      }
+      console.log('stdout',stdout)
+      if(stdout.indexOf('no devices/emulators') > -1){
+        reject('设备连接中断')
+      }
+      console.log('stderr', stderr)
+    })
+  })
+    
 }
 //截屏到电脑path目录
 function $screenCap(path){
-    execSync(`adb shell screencap -p /sdcard/screencap.png`)
+    execSync(`adb shell screencap -p /sdcard/screencap.png`, )
     execSync(`adb pull /sdcard/screencap.png ${path}/screen_${new Date().getTime()}.png`)
 }
 //清除应用缓存
@@ -139,6 +163,9 @@ function $getAppName(){
       }
       console.log('---stdout',stdout)
       console.log('stderr', stderr)
+      if(stdout.indexOf('no devices/emulators') > -1){
+        reject('设备连接中断')
+      }
       if(stdout.match(/[(]name=(.*?)[)]/g).length > 0){
         console.log(stdout.match(/[(]name=(.*?)[)]/g))
         resolve()
@@ -162,7 +189,6 @@ function $getDevices(){
         resolve()
       }else{
         reject('当前没有设备连接')
-        alert('当前没有设备连接')
       }
       console.log('getDevices stderr', stderr)
     })
@@ -206,8 +232,10 @@ function $isExistFileInDevice(filePath){
         console.log('stderr', error)
       }
       console.log('stdout', stdout)
-      if(stdout.indexOf('No such file or directory') == -1){
-        alert(`不存在此文件或文件夹：${filePath}`)
+      if(stdout.indexOf('no devices/emulators') > -1){
+        reject('设备连接中断')
+      }
+      if(stdout.indexOf('No such file or directory') > -1){
         reject(`不存在此文件或文件夹：${filePath}`)
       }else{
         resolve()
@@ -217,9 +245,6 @@ function $isExistFileInDevice(filePath){
   })
   
 }
-
-
-
 
 
 
