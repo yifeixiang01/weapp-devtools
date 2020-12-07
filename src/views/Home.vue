@@ -64,12 +64,12 @@
               </div>
       </v-col>
       <v-col md="3">
-        <div class="debug-area" @drop="onDrop($event)" @dragover="onDragover($event)">
-          将小程序包拖拽到此处
-        </div>
+        <v-sheet elevation="2" class="mx-auto" width="200" height="300" @drop="onDrop($event)" @dragover="onDragover($event)">
+          <div class="debug-area">将小程序包拖拽到此处</div> 
+        </v-sheet>
       </v-col>
     </v-row>
-      <v-btn @click="showToast">toast</v-btn>
+    <v-btn @click="showToast">toast</v-btn>
 
   </div>
 
@@ -79,11 +79,11 @@
 <script>
 
 const fs = window.require('fs')
-import {$compileFile, $copyFile, $pushToMobile} from '../assets/js/tools'
+import {$compileFile, $copyFile, $pushToMobile, $isExistFileInDevice} from '../assets/js/tools'
 const  ElectronStore = window.require('electron-store')
 const electronStore = new ElectronStore();
 
-import {$toast} from '../utils'
+// import {$toast} from '../utils'
 
 export default {
   components:{
@@ -298,8 +298,8 @@ export default {
       e.preventDefault();
     },
     showToast(){
-
-      $toast({content: new Date().getTime(),duration: '3000', show: true });
+      $isExistFileInDevice('sdcard/moss/weapp2')
+      //$toast({content: new Date().getTime(),duration: '3000', show: true });
     }
   }
 }

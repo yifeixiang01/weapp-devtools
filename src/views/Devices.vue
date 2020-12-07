@@ -19,7 +19,7 @@
 // import adbkit from '../assets/js/adb'
 const  ElectronStore = window.require('electron-store')
 const electronStore = new ElectronStore();
-import {$startApp, $screenCap, $openSetting, $clearAppStorage, $getAppName, $closeApp, $startCMD, $getDevices} from '../assets/js/tools'
+import {$startApp, $screenCap, $clearAppStorage, $getAppName, $closeApp, $startCMD, $getDevices} from '../assets/js/tools'
 
 export default {
     data: () => ({
@@ -45,7 +45,7 @@ export default {
             $screenCap(weappSavePath)
         },
         openSetting(){
-            $openSetting()
+            $startApp('com.android.settings/.Settings')
         },
         clearWecarmasStorage(){
             $clearAppStorage('com.tencent.wecarmas')

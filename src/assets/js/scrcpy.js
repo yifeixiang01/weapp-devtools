@@ -12,23 +12,27 @@ class Scrcpy{
             stayAwake: flag => flag? ' --stay-awake': '',                     //保持常亮
             showTouches: flag=> flag? ' --show-touches': '',                  //显示触摸轨迹
             disableScreensaver: flag => flag? '--disable-screensaver': '',    //关闭屏保
-            record: flag => flag? ` --record ${this.fileSavePath}/record${formateDate()}.mp4`: ''
+            record: flag =>flag? ` --record ${this.fileSavePath}/record${formateDate()}.mp4`: '',   //录屏并保存到指定路径下
         }
     }
     //启动scrcpy
     start(windowSetting, fileSavePath){
-        let workerProcess = exec(this.getCmdStr(windowSetting), {cwd: ''})
-        this.fileSavePath = fileSavePath
-
-        workerProcess.stdout.on('data', data =>{
-            console.log('stdout', data)
+        return new Promise((resolve) => {
+            this.fileSavePath = fileSavePath
+            let workerProcess = exec(this.getCmdStr(windowSetting), {cwd: ''})
+            
+            workerProcess.stdout.on('data', data =>{
+                console.log('stdout', data)
+            })
+            workerProcess.stderr.on('data', data =>{
+                console.log('stderr', data)
+            })
+            workerProcess.on('close', code => {
+                console.log('关闭', code)
+                resolve();
+            })
         })
-        workerProcess.stderr.on('data', data =>{
-            console.log('stderr', data)
-        })
-        workerProcess.on('close', code => {
-            console.log('关闭', code)
-        })
+        
     }
     //将投屏参数拼接成字符串指令
     getCmdStr(options){

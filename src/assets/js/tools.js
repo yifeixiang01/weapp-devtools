@@ -22,15 +22,16 @@ function $compileFile(weappName, projectPath, weappCompilePath, wechatDevtoolsPa
           console.log('stderr', data)
       })
       workerProcess.on('close', code => {
+        let timer = null;
           console.log('编译结束', code)
           if(code == 0){
             console.log('开始监听文件变化', `${weappCompilePath}/__APP__.wxapkg`)
             fs.watch(`${weappCompilePath}/__APP__.wxapkg`, (eventType, filename) => {
               console.log('文件变化', eventType, filename)
               if(eventType == 'change'){
-                clearTimeout(this.timer)
-                this.timer = setTimeout(() => {
-
+                clearTimeout(timer)
+                timer = setTimeout(() => {
+                  console.log()
                   resolve()
                 }, 300);
               }
@@ -69,29 +70,35 @@ function $copyFile(resourcePath, aimPath){
 }
 //调用adb命令将小程序包push到车机or手机
 function $pushToMobile(pkgPath, weappName, appName){
+  
   return new Promise((resolve, reject) => {
     console.log('-----开始将小程序包push到车机')
     let pathInCar = (appName === 'debug')? 'sdcard/moss/weapp': `data/data/com.tencent.wecarmas/files/moss/${weappName}/pkg`
-
-    let workerProcess = exec(`adb push ${pkgPath} ${pathInCar}`, {cwd: './'})
-
-    workerProcess.stdout.on('data', data =>{
-        console.log('push stdout', data)
-        if(data.indexOf('Permission denied') != -1){
-          console.log('Permission denied', data.indexOf('Permission denied'))
-          reject('Permission denied: adb没有push权限')
-        }
+    //先判断设备上将要push的目录是否存在
+    $isExistFileInDevice(pathInCar).then(() => {
+      let workerProcess = exec(`adb push ${pkgPath} ${pathInCar}`, {cwd: './'})
+  
+      workerProcess.stdout.on('data', data =>{
+          console.log('push stdout', data)
+          if(data.indexOf('Permission denied') != -1){
+            console.log('Permission denied', data.indexOf('Permission denied'))
+            reject('Permission denied: adb没有push权限')
+          }
+      })
+      workerProcess.stderr.on('data', data =>{
+          console.log('push stderr', data)
+      })
+      workerProcess.on('close', code =>{
+        console.log('push close', code)
+          if(code == 0){
+              console.log('------完成push小程序包到车机')
+              resolve()
+          }
+      })
+    }).catch(err => {
+      reject(err)
     })
-    workerProcess.stderr.on('data', data =>{
-        console.log('push stderr', data)
-    })
-    workerProcess.on('close', code =>{
-      console.log('push close', code)
-        if(code == 0){
-            console.log('------完成push小程序包到车机')
-            resolve()
-        }
-    })
+    
   }) 
   
 }
@@ -119,36 +126,48 @@ function $screenCap(path){
     execSync(`adb shell screencap -p /sdcard/screencap.png`)
     execSync(`adb pull /sdcard/screencap.png ${path}/screen_${new Date().getTime()}.png`)
 }
-//打开原生界面
-function $openSetting(){
-    $startApp('com.android.settings/.Settings')
-}
 //清除应用缓存
 function $clearAppStorage(pkgName){
     exec(`adb shell pm clear ${pkgName}`)
 }
 //获取当前启动应用名和包名
 function $getAppName(){
+  return new Promise((resolve, reject) => {
     exec('adb shell dumpsys window w |findstr \\/ |findstr name=',(error, stdout, stderr) => {
-        if(error){
-            console.log('error', error)
-        }
-        console.log('---stdout',stdout)
-        console.log('stderr', stderr)
-
+      if(error){
+          console.log('error', error)
+      }
+      console.log('---stdout',stdout)
+      console.log('stderr', stderr)
+      if(stdout.match(/[(]name=(.*?)[)]/g).length > 0){
         console.log(stdout.match(/[(]name=(.*?)[)]/g))
-
+        resolve()
+      }else{
+        reject('当前没有正在启动的应用')
+      }
     })
+  })
+    
 }
 //查看连接的设备
 function $getDevices(){
-  exec('adb devices', (error, stdout, stderr) => {
-    if(error){
-      console.log('error', error)
-    }
-    console.log('getDevices stdout', stdout)
-    console.log('getDevices stderr', stderr)
+  return new Promise((resolve, reject) => {
+    exec('adb devices', (error, stdout, stderr) => {
+      if(error){
+        console.log('error', error)
+      }
+      console.log('getDevices stdout', stdout)
+      if(stdout.match(/[0-9]/g)){ 
+        console.log('当前的设备', stdout)
+        resolve()
+      }else{
+        reject('当前没有设备连接')
+        alert('当前没有设备连接')
+      }
+      console.log('getDevices stderr', stderr)
+    })
   })
+  
 }
 function $startCMD(){
 
@@ -165,7 +184,7 @@ function $startCMD(){
         });
 }
 //将当前时间格式化为年月日 20201206
-function formateDate(){
+function $formateDate(){
   let date = new Date();
   let year = date.getFullYear();
   let month = date.getMonth() + 1;
@@ -180,4 +199,28 @@ function formateDate(){
   seconds = seconds > 9? seconds: '0'+ seconds
   return `${year}${month}${day}${hour}${minutes}${seconds}`
 }
-export {$compileFile, $copyFile, $pushToMobile, $startApp, $screenCap, $openSetting, $clearAppStorage, $getAppName, $closeApp, $startCMD, $getDevices, formateDate}
+function $isExistFileInDevice(filePath){
+  return new Promise((resolve, reject)=> {
+    exec(`adb shell find ${filePath}`, (error, stdout, stderr) => {
+      if(error){
+        console.log('stderr', error)
+      }
+      console.log('stdout', stdout)
+      if(stdout.indexOf('No such file or directory') == -1){
+        alert(`不存在此文件或文件夹：${filePath}`)
+        reject(`不存在此文件或文件夹：${filePath}`)
+      }else{
+        resolve()
+      }
+      console.log('stderr', stderr)
+    })
+  })
+  
+}
+
+
+
+
+
+
+export {$compileFile, $copyFile, $pushToMobile, $startApp, $screenCap, $clearAppStorage, $getAppName, $closeApp, $startCMD, $getDevices, $formateDate, $isExistFileInDevice}
