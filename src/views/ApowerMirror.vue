@@ -72,11 +72,12 @@ export default {
   },
   methods: {
     getConfig(){
-      this.mirrorConfig = electronStore.get('mirrorConfig')
+      this.mirrorConfig = electronStore.get('mirrorConfig') || {}
       console.log('获取镜像配置', this.mirrorConfig)
     },
     start(){
       let {weappSavePath} = electronStore.get('weappConfig')
+      console.log('保存目录', weappSavePath)
       scrcpyTool.start(this.mirrorConfig, weappSavePath) 
     },
     submit(){

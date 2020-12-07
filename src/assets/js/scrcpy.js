@@ -1,9 +1,8 @@
 const { exec } = window.require('child_process')
-import {formateDate} from './tools'
 
 class Scrcpy{
     constructor(){
-        '',
+        this.fileSavePath = ''
         this.cmdObj = {
             windowTitle: title => title? ' --window-title ' + title: '',      //窗口标题
             borderless: flag => flag? ' --window-borderless': '',             //无边框
@@ -16,9 +15,9 @@ class Scrcpy{
             record: flag => flag? ` --record ${this.fileSavePath}/record${formateDate()}.mp4`: ''
         }
     }
-    start(windowSetting){
-
+    start(windowSetting, fileSavePath){
         let workerProcess = exec(this.getCmdStr(windowSetting), {cwd: ''})
+        this.fileSavePath = fileSavePath
 
         workerProcess.stdout.on('data', data =>{
             console.log('stdout', data)
@@ -30,10 +29,9 @@ class Scrcpy{
             console.log('关闭', code)
         })
     }
-    getCmdStr(options, fileSavePath){
+    getCmdStr(options){
         let cmdStr = 'scrcpy'
-        this.fileSavePath = fileSavePath
-
+        
         for(let key in options){
             cmdStr += this.cmdObj[key](options[key])
         }
@@ -41,5 +39,20 @@ class Scrcpy{
         return cmdStr
     }
 }
-
+//将当前时间格式化为年月日 20201206
+function formateDate(){
+    let date = new Date();
+    let year = date.getFullYear();
+    let month = date.getMonth() + 1;
+    month = month > 9? month: '0'+ month
+    let day = date.getDate();
+    day = day > 9? day: '0'+ day
+    let hour = date.getHours();
+    hour = hour > 9? hour: '0'+ hour
+    let minutes = date.getMinutes();
+    minutes = minutes > 9? minutes: '0'+ minutes
+    let seconds = date.getSeconds();
+    seconds = seconds > 9? seconds: '0'+ seconds
+    return `${year}${month}${day}${hour}${minutes}${seconds}`
+  }
 module.exports = Scrcpy
