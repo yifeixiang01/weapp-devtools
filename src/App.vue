@@ -10,7 +10,6 @@
               </template>
               <span>{{item.title}}</span>
             </v-tooltip>
-            
           </v-list-item-action>
         </v-list-item>
       </v-list>

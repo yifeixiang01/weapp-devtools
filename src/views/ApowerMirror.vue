@@ -37,7 +37,7 @@
           </v-col> -->
 
         </v-row>
-        <v-btn  :disabled="!valid"  color="success"  class="mr-4"  @click="submit">保存设置</v-btn>
+        <!-- <v-btn  :disabled="!valid"  color="success"  class="mr-4"  @click="submit">保存设置</v-btn> -->
         <v-btn  :disabled="!valid"  color="success"  class="mr-4"  @click="start">启动</v-btn>
       </v-form>
   
