@@ -15,6 +15,7 @@ class Scrcpy{
             record: flag => flag? ` --record ${this.fileSavePath}/record${formateDate()}.mp4`: ''
         }
     }
+    //启动scrcpy
     start(windowSetting, fileSavePath){
         let workerProcess = exec(this.getCmdStr(windowSetting), {cwd: ''})
         this.fileSavePath = fileSavePath
@@ -29,6 +30,7 @@ class Scrcpy{
             console.log('关闭', code)
         })
     }
+    //将投屏参数拼接成字符串指令
     getCmdStr(options){
         let cmdStr = 'scrcpy'
         
