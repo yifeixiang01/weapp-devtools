@@ -17,8 +17,8 @@
         <!-- <v-col  cols="12"  sm="1"  md="1"><v-file-input type="file" webkitdirectory hide-input @change="selectFile"></v-file-input></v-col> -->
       </v-row>
       <v-row>
-        <v-col>
-          <v-btn  :disabled="!valid"  color="success"  class="mr-4"  @click="submit">保存</v-btn>
+        <v-col class="text-center">
+          <v-btn  :disabled="!valid" outlined  color="success"  class="mr-4"  @click="submit">保存</v-btn>
         </v-col>
       </v-row>
     </v-container>

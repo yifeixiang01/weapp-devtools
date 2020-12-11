@@ -38,7 +38,10 @@
 
         </v-row>
         <!-- <v-btn  :disabled="!valid"  color="success"  class="mr-4"  @click="submit">保存设置</v-btn> -->
-        <v-btn  :disabled="!valid"  color="success"  class="mr-4"  @click="start">启动</v-btn>
+        <div class="text-center">
+          <v-btn  :disabled="!valid" outlined  color="success"  class="mr-4"  @click="start">启动</v-btn>
+        </div>
+        
       </v-form>
   
 </template>
