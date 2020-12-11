@@ -32,32 +32,68 @@ export default {
     },
     methods: {
         startWecarmas(){
-            $startApp('com.tencent.wecarmas/com.tencent.wecarmas.ui.activity.HomeActivity')
+            $getDevices().then(() => {
+                $startApp('com.tencent.wecarmas/com.tencent.wecarmas.ui.activity.HomeActivity')
+            }).catch(err => {
+                alert(err)
+            })
+            
         },
         closeWecarmas(){
-            $closeApp('com.tencent.wecarmas')
+            $getDevices().then(() => {
+                $closeApp('com.tencent.wecarmas')
+            }).catch(err => {
+                alert(err)
+            })
+            
         },
         openWechat(){
-            $startApp('com.tencent.mm/com.tencent.mm.ui.LauncherUI')
+            $getDevices().then(() => {
+                $startApp('com.tencent.mm/com.tencent.mm.ui.LauncherUI')
+            }).catch(err => {
+                alert(err)
+            })
+            
         },
         screenCap(){
-            let {weappSavePath} = electronStore.get('weappConfig')
-            $screenCap(weappSavePath)
+            $getDevices().then(() => {
+                let {weappSavePath} = electronStore.get('weappConfig')
+                $screenCap(weappSavePath)
+            }).catch(err => {
+                alert(err)
+            })
+            
         },
         openSetting(){
-            $startApp('com.android.settings/.Settings')
+            $getDevices().then(() => {
+                $startApp('com.android.settings/.Settings')
+            }).catch(err => {
+                alert(err)
+            })
+            
         },
         clearWecarmasStorage(){
-            $clearAppStorage('com.tencent.wecarmas')
+            $getDevices().then(() => {
+                $clearAppStorage('com.tencent.wecarmas')
+            }).catch(err => {
+                alert(err)
+            })
+            
         },
         getAppPkgName(){
-            $getAppName()
+            $getDevices().then(() => {
+                $getAppName()
+            }).catch(err => {
+                alert(err)
+            })
+            
         },
         startCMD(){
+
             $startCMD()
         },
         getDevices(){
-            $getDevices()
+            $getDevices().catch(err => {alert(err)})
         }
     }
     
