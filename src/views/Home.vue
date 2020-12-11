@@ -1,8 +1,8 @@
 <template>
   <div>
-    <v-row>
-      <v-col md="9">
-        <v-data-table  :headers="headers"  :items="weappList" item-key="name" hide-default-footer :show-select="true" v-model="selected" :single-select="isSingleSelect" @item-selected="selectWeapp">
+    <v-row @drop="onDrop($event)" @dragover="onDragover($event)">
+      <v-col md="12">
+        <v-data-table  :headers="headers"  :items="weappList" item-key="name" hide-default-footer :show-select="true" v-model="selected" :single-select="isSingleSelect" @item-selected="selectWeapp" >
           <template v-slot:top>
             <v-toolbar flat>
               <v-spacer></v-spacer>
@@ -63,13 +63,8 @@
           <v-btn  class="ma-2"  outlined  color="indigo" @click="runCompile">开始编译</v-btn>
         </div>
       </v-col>
-      <v-col md="3">
-        <v-sheet elevation="2" class="mx-auto" width="200" height="300" @drop="onDrop($event)" @dragover="onDragover($event)">
-          <div class="debug-area">将小程序包拖拽到此处</div> 
-        </v-sheet>
-      </v-col>
     </v-row>
-    <v-btn @click="showToast">toast</v-btn>
+    <!-- <v-btn @click="showToast">toast</v-btn> -->
 
   </div>
 </template>
@@ -77,7 +72,7 @@
 <script>
 
 const fs = window.require('fs')
-import {$compileFile, $copyFile, $pushToMobile, $isExistFileInDevice, $getDevices} from '../assets/js/tools'
+import {$compileFile, $copyFile, $pushToMobile, $isExistFileInDevice, $getDevices, $isAppRunning} from '../assets/js/tools'
 const  ElectronStore = window.require('electron-store')
 const electronStore = new ElectronStore();
 
@@ -132,18 +127,6 @@ export default {
       }
   },
   methods: {
-    getConfig(){
-      return new Promise((resolve, reject) => {
-        let value = electronStore.get('weappConfig')
-        console.log('小程序配置', value)
-        if(value){
-          resolve(value)
-        }else{
-          console.log('没有配置文件')
-          reject()
-        }
-      })
-    },
     //读取小程序列表
     getWeappList(){
       this.weappList = electronStore.get('weappList') || []
@@ -169,23 +152,25 @@ export default {
       }
       let {name:weappName, appName, path:projectPath} = this.selected[0];
 
-      $compileFile(weappName, projectPath, weappCompilePath, wechatDevtoolsPath)
-        .then(() => {
-          let resourcePath = `${weappCompilePath}/__APP__.wxapkg`
-          let aimPath = `${weappSavePath}/${appName}.wxapkg`
+      $isAppRunning('WeChat', '微信桌面版').then(()=>{
+        return $compileFile(weappName, projectPath, weappCompilePath, wechatDevtoolsPath)
+      })
+      .then(() => {
+        let resourcePath = `${weappCompilePath}/__APP__.wxapkg`
+        let aimPath = `${weappSavePath}/${appName}.wxapkg`
 
-          return $copyFile(resourcePath, aimPath)
-        }).then(()=>{
-          return $getDevices()
-        })
-        .then(() => {
-          let pkgPath = `${weappSavePath}/${appName}.wxapkg`
-          return $pushToMobile(pkgPath, weappName, appName)
-        })
-        .catch((err) => {
-          //console.error(`运行出错:${err}`)
-          alert(err)
-        })
+        return $copyFile(resourcePath, aimPath)
+      }).then(()=>{
+        return $getDevices()
+      })
+      .then(() => {
+        let pkgPath = `${weappSavePath}/${appName}.wxapkg`
+        return $pushToMobile(pkgPath, weappName, appName)
+      })
+      .catch((err) => {
+        //console.error(`运行出错:${err}`)
+        alert(err)
+      })
     },
     //选择小程序
     selectWeapp(row){
@@ -221,6 +206,10 @@ export default {
       console.log(this.editedIndex)
       this.weappList.splice(this.editedIndex, 1)
       electronStore.set('weappList', this.weappList)
+      //如果删除的item是选中的，需要清空选中的
+      if(this.weappList[this.editedIndex].weappName == this.selected[0]){
+        this.selected = []
+      }
       this.closeDelete()
     },
     close () {

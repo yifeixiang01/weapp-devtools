@@ -39,7 +39,7 @@ export default {
       { title: '配置', route: 'About', icon: 'mdi-gavel' },
       { title: '投屏', route: 'ApowerMirror', icon: 'mdi-call-split' },
       { title: '设备', route: 'Devices', icon: 'mdi-dialpad' },
-      {title: '终端', route: "Terminal", icon: 'mdi-dialpad'}
+      // {title: '终端', route: "Terminal", icon: 'mdi-dialpad'}
     ],
     mini: true,
   })

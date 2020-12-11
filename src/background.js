@@ -15,8 +15,8 @@ protocol.registerSchemesAsPrivileged([
 async function createWindow () {
   // Create the browser window.
   const win = new BrowserWindow({
-    width: 1100,
-    height: 600,
+    width: 760,
+    height: 480,
     maximizable: false,
     // icon: `public/panda.ico`,
     webPreferences: {

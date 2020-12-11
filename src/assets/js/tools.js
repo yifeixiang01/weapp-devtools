@@ -6,7 +6,7 @@ const fs = window.require('fs')
 function $compileFile(weappName, projectPath, weappCompilePath, wechatDevtoolsPath){
     return new Promise((resolve, reject) => {
       console.log(`开始编译“${weappName}”小程序`)
-
+      let timer = null;
       let workerProcess = exec(`cli auto-preview --project ${projectPath}`, {cwd: wechatDevtoolsPath}, (error, stdout, stderr) => {
         if(error){
             console.log('+++error', error)
@@ -25,16 +25,17 @@ function $compileFile(weappName, projectPath, weappCompilePath, wechatDevtoolsPa
           }
       })
       workerProcess.on('close', code => {
-        let timer = null;
-          console.log('编译结束', code)
+        
+          console.log('编译close', code)
           if(code == 0){
             console.log('开始监听文件变化', `${weappCompilePath}/__APP__.wxapkg`)
             fs.watch(`${weappCompilePath}/__APP__.wxapkg`, (eventType, filename) => {
               console.log('文件变化', eventType, filename)
               if(eventType == 'change'){
+                console.log(11111)
                 clearTimeout(timer)
                 timer = setTimeout(() => {
-                  console.log()
+                  console.log('编译完成--------')
                   resolve()
                 }, 300);
               }
@@ -245,7 +246,41 @@ function $isExistFileInDevice(filePath){
   })
   
 }
+//判断电脑程序是否在运行
+function $isAppRunning(appName, appNameZh){
+  return new Promise((resolve, reject) => {
+    exec(`tasklist`, (error, stdout, stderr) => {
+      if(error){
+        console.log('stderr', error)
+      }
+      console.log('stdout', stdout)
+      if(stdout.indexOf(`${appName}.exe`) != -1){
+        console.log(`------${appName}正在运行-------`)
+        resolve()
+        
+      }else{
+        console.log(`------${appName}没有启动-------`)
+        reject(`请先启动：${appNameZh}`)
+      }
+      console.log(stderr)
+    })
+  })
+  
+}
 
 
-
-export {$compileFile, $copyFile, $pushToMobile, $startApp, $screenCap, $clearAppStorage, $getAppName, $closeApp, $startCMD, $getDevices, $formateDate, $isExistFileInDevice}
+export {
+  $compileFile, 
+  $copyFile, 
+  $pushToMobile, 
+  $startApp, 
+  $screenCap, 
+  $clearAppStorage, 
+  $getAppName, 
+  $closeApp, 
+  $startCMD, 
+  $getDevices, 
+  $formateDate, 
+  $isExistFileInDevice,
+  $isAppRunning
+}
