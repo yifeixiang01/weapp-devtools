@@ -59,6 +59,9 @@ function $copyFile(resourcePath, aimPath){
 
       reject(`拷贝失败，不存在此文件:${resourcePath}`)
     }else{
+      if(fs.existsSync(aimPath)){
+        fs.unlinkSync(aimPath)
+      }
       fs.copyFile(resourcePath, aimPath, (data)=>{
         console.log('--拷贝文件完成--', data)
         if(!fs.existsSync(aimPath)){
