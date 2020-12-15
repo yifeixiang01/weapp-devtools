@@ -1,7 +1,9 @@
 {
   "name": "weapp-tools",
+  "author": "yifeixiang",
   "version": "1.0.0",
   "private": true,
+  "main": "background.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -11,7 +13,6 @@
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
   },
-  "main": "background.js",
   "dependencies": {
     "adbkit": "^2.11.1",
     "bluebird": "^3.7.2",

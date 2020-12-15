@@ -18,7 +18,7 @@ async function createWindow () {
     width: 770,
     height: 480,
     maximizable: false,
-    // icon: `public/panda.ico`,
+    // icon: 'public/icon.ico',
     webPreferences: {
       enableRemoteModule: true,
       nodeIntegration: true
