@@ -8,7 +8,11 @@
             <!-- <v-col sm="3"><v-btn>输出log</v-btn></v-col> -->
             <v-col sm="3"><v-btn @click="openSetting">打开原生界面</v-btn></v-col>
             <v-col sm="3"><v-btn @click="openWechat">打开微信</v-btn></v-col>
-            <!-- <v-col sm="3"><v-btn @click="getAppPkgName">查看应用名和包名</v-btn></v-col> -->
+            <v-col sm="3"><v-btn @click="openActiveCenter">打开活动中心</v-btn></v-col>
+            <v-col sm="3"><v-btn @click="closeActiveCenter">关闭活动中心</v-btn></v-col>
+            <v-col sm="3"><v-btn @click="getAppPkgName">查看应用名和包名</v-btn></v-col>
+            <v-col sm="3"><v-btn @click="showAllApp">显示所有应用</v-btn></v-col>
+            
             <!-- <v-col sm="3"><v-btn @click="startCMD">打开cmd</v-btn></v-col> -->
             <!-- <v-col sm="3"><v-btn @click="getDevices">查看连接的设备</v-btn></v-col> -->
         </v-row>
@@ -19,7 +23,7 @@
 // import adbkit from '../assets/js/adb'
 const  ElectronStore = window.require('electron-store')
 const electronStore = new ElectronStore();
-import {$startApp, $screenCap, $clearAppStorage, $getAppName, $closeApp, $startCMD, $getDevices} from '../assets/js/tools'
+import {$startApp, $screenCap, $clearAppStorage, $getAppName, $closeApp, $startCMD, $getDevices, $showLaunch} from '../assets/js/tools'
 
 export default {
     data: () => ({
@@ -94,6 +98,23 @@ export default {
         },
         getDevices(){
             $getDevices().catch(err => {alert(err)})
+        },
+        openActiveCenter(){
+            $getDevices().then(() => {
+                $startApp('com.android.launcherWT/com.android.launcherWT.Launcher')
+            }).catch(err => {
+                alert(err)
+            })
+        },
+        closeActiveCenter(){
+            $getDevices().then(() => {
+                $closeApp('com.android.launcherWT')
+            }).catch(err => {
+                alert(err)
+            })
+        },
+        showAllApp(){
+            $showLaunch
         }
     }
     

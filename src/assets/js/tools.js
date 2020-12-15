@@ -201,17 +201,17 @@ function $getDevices(){
 }
 function $startCMD(){
 
-        var result = spawn('cmd.exe', ['/s', '/c', 'ipconfig']);
-        result.on('close', function(code) {
-            console.log('child process exited with code :' + code);
-        });
-        result.stdout.on('data', function(data) {
-            console.log('stdout: ' + data);
-        });
-        result.stderr.on('data', function(data) {
-            console.log('stderr: ' + data);
+    var result = spawn('cmd.exe', ['/s', '/c', 'ipconfig']);
+    result.on('close', function(code) {
+        console.log('child process exited with code :' + code);
+    });
+    result.stdout.on('data', function(data) {
+        console.log('stdout: ' + data);
+    });
+    result.stderr.on('data', function(data) {
+        console.log('stderr: ' + data);
 
-        });
+    });
 }
 //将当前时间格式化为年月日 20201206
 function $formateDate(){
@@ -268,7 +268,10 @@ function $isAppRunning(appName, appNameZh){
       console.log(stderr)
     })
   })
-  
+}
+function $showLaunch(){
+  execSync(`adb shell setprop sys.thirdapk.caninstall 1`)
+  execSync(`adb shell am force-stop com.android.launcherWT`)
 }
 
 
@@ -285,5 +288,6 @@ export {
   $getDevices, 
   $formateDate, 
   $isExistFileInDevice,
-  $isAppRunning
+  $isAppRunning,
+  $showLaunch
 }
