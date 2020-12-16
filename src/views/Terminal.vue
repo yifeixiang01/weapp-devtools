@@ -1,11 +1,10 @@
 <template>
     <div class="container">
-        <div  id="terminal"></div>
+        
     </div>
 </template>
 <script>
-import {Terminal} from 'xterm'
-
+let ws = require('nodejs-websocket')
 export default {
     data(){
         return {
@@ -13,14 +12,36 @@ export default {
         }
     },
     created(){
-        this.createTerminal()
+        
+
+        //this.openClient();
+    },
+    mounted(){
+        this.createServer();
     },
     methods: {
-        createTerminal(){
-            this.terminal = new Terminal();
-            const termDom = document.getElementById('terminal')
-            this.terminal.open(termDom)
-            this.terminal.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m $ ')
+        createServer(){
+            console.log(ws.createServer)
+            if(ws.createServer){
+                ws.createServer(socket => {
+                    socket.on('text', res => {
+                        console.log(`${new Date().getTime} server:`, res)
+                    })
+                }).listen(3000)
+            }
+            
+        },
+        openClient(){
+            let client = new WebSocket('ws://192.168.0.109:3000')
+            client.onopen = function(){
+                console.log('client open')
+                setInterval(() => {
+                    client.send('客户端消息')
+                }, 2000)
+            }
+            client.onmessage = function(e){
+                console.log('client', e)
+            }
         }
     }
 }
@@ -29,8 +50,5 @@ export default {
     .container{
         position: relative;
     }
-    #terminal{
-        width: 100%;
-        height: 500px;
-    }
+
 </style>

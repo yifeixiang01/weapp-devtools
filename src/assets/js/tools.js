@@ -269,6 +269,8 @@ function $isAppRunning(appName, appNameZh){
     })
   })
 }
+
+//打开桌面
 function $showLaunch(){
   execSync(`adb shell setprop sys.thirdapk.caninstall 1`)
   execSync(`adb shell am force-stop com.android.launcherWT`)

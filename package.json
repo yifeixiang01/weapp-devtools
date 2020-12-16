@@ -19,6 +19,7 @@
     "core-js": "^3.6.5",
     "electron-store": "^6.0.1",
     "fix-path": "^3.0.0",
+    "nodejs-websocket": "^1.7.2",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
     "vuetify": "^2.2.11",
