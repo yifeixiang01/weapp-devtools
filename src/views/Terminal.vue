@@ -1,26 +1,63 @@
 <template>
     <div class="container">
-        <div  id="terminal"></div>
+        <v-row>
+            <v-col md="11"><v-text-field v-model="inputText"></v-text-field></v-col>
+            <v-col md="1"><v-btn  class="ma-2"  outlined  color="indigo" @click="sendMsg">发送</v-btn></v-col>
+        </v-row>
+        
+        <v-btn  class="ma-2"  outlined  color="indigo" @click="closeClient">关闭客户端</v-btn>
     </div>
 </template>
 <script>
-import {Terminal} from 'xterm'
+
 
 export default {
     data(){
         return {
-
+            path: 'ws://10.1.42.27:8181/websocket1',
+            inputText: '',
+            socket: null
         }
     },
     created(){
-        this.createTerminal()
+        
+    },
+    mounted(){
+        this.init();
+
     },
     methods: {
-        createTerminal(){
-            this.terminal = new Terminal();
-            const termDom = document.getElementById('terminal')
-            this.terminal.open(termDom)
-            this.terminal.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m $ ')
+        init(){
+            if (typeof WebSocket === "undefined") {
+                alert("您的浏览器不支持socket");
+            } else {
+                // 实例化socket
+                this.socket = new WebSocket("ws://10.1.42.27:8181/websocket1");
+
+                this.socket.onopen = () => {
+                    console.log('socket is open')
+                }
+                this.socket.onmessage = res => {
+                    console.log('client receive', res.data)
+                }
+                this.socket.onclose = () =>{
+                    console.log('client cloes')
+                }
+                this.socket.onerror = err =>{
+                    console.log('client error', err)
+                }
+            }
+        },
+        //发送消息
+        sendMsg(){
+            let text = this.inputText
+            if(text != ''){
+                this.socket.send('client1 send:'+ text)
+            }
+        },
+        //关闭客户端
+        closeClient(){
+            this.socket.close();
         }
     }
 }
@@ -34,3 +71,4 @@ export default {
         height: 500px;
     }
 </style>
+

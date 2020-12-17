@@ -32,7 +32,6 @@ function $compileFile(weappName, projectPath, weappCompilePath, wechatDevtoolsPa
             fs.watch(`${weappCompilePath}/__APP__.wxapkg`, (eventType, filename) => {
               console.log('文件变化', eventType, filename)
               if(eventType == 'change'){
-                console.log(11111)
                 clearTimeout(timer)
                 timer = setTimeout(() => {
                   console.log('编译完成--------')
@@ -229,6 +228,7 @@ function $formateDate(){
   seconds = seconds > 9? seconds: '0'+ seconds
   return `${year}${month}${day}${hour}${minutes}${seconds}`
 }
+//判断设备目录下是否存在某个文件
 function $isExistFileInDevice(filePath){
   return new Promise((resolve, reject)=> {
     exec(`adb shell find ${filePath}`, (error, stdout, stderr) => {
@@ -269,6 +269,7 @@ function $isAppRunning(appName, appNameZh){
     })
   })
 }
+//显示桌面
 function $showLaunch(){
   execSync(`adb shell setprop sys.thirdapk.caninstall 1`)
   execSync(`adb shell am force-stop com.android.launcherWT`)
