@@ -114,9 +114,9 @@ function $pushToMobile(pkgPath, weappName, appName){
   
 }
 //启动应用
-function $startApp(packageName){
+function $startApp(packageName, serial){
     return new Promise((resolve, reject) => {
-        exec(`adb shell am start ${packageName}`, (error, stdout, stderr) => {
+        exec(`adb -s ${serial} shell am start ${packageName}`, (error, stdout, stderr) => {
             if(error){
                 console.log('error', error)
             }
@@ -132,10 +132,10 @@ function $startApp(packageName){
     
 }
 //关闭应用
-function $closeApp(appName){
+function $closeApp(appName, serial){
   return new Promise((resolve, reject) => {
     console.log('关闭应用：'+ appName)
-    exec(`adb shell am force-stop ${appName}`, (error, stdout, stderr) => {
+    exec(`adb ${serial} shell am force-stop ${appName}`, (error, stdout, stderr) => {
       if(error){
         console.log('error', error)
       }
@@ -149,18 +149,18 @@ function $closeApp(appName){
     
 }
 //截屏到电脑path目录
-function $screenCap(path){
-    execSync(`adb shell screencap -p /sdcard/screencap.png`, )
-    execSync(`adb pull /sdcard/screencap.png ${path}/screen_${new Date().getTime()}.png`)
+function $screenCap(path, serial){
+    execSync(`adb -s ${serial} shell screencap -p /sdcard/screencap.png`, )
+    execSync(`adb -s ${serial} pull /sdcard/screencap.png ${path}/screen_${new Date().getTime()}.png`)
 }
 //清除应用缓存
-function $clearAppStorage(pkgName){
-    exec(`adb shell pm clear ${pkgName}`)
+function $clearAppStorage(pkgName, serial){
+    exec(`adb -s ${serial} shell pm clear ${pkgName}`)
 }
 //获取当前启动应用名和包名
-function $getAppName(){
+function $getAppName(serial){
   return new Promise((resolve, reject) => {
-    exec('adb shell dumpsys window w |findstr \\/ |findstr name=',(error, stdout, stderr) => {
+    exec(`adb -s ${serial} shell dumpsys window w |findstr \\/ |findstr name=`,(error, stdout, stderr) => {
       if(error){
           console.log('error', error)
       }
@@ -182,7 +182,7 @@ function $getAppName(){
 //查看连接的设备
 function $getDevices(){
   return new Promise((resolve, reject) => {
-    exec('adb devices', (error, stdout, stderr) => {
+    exec('adb devices -l', (error, stdout, stderr) => {
       if(error){
         console.log('error', error)
       }
@@ -229,9 +229,9 @@ function $formateDate(){
   return `${year}${month}${day}${hour}${minutes}${seconds}`
 }
 //判断设备目录下是否存在某个文件
-function $isExistFileInDevice(filePath){
+function $isExistFileInDevice(filePath, serial){
   return new Promise((resolve, reject)=> {
-    exec(`adb shell find ${filePath}`, (error, stdout, stderr) => {
+    exec(`adb -s ${serial} shell find ${filePath}`, (error, stdout, stderr) => {
       if(error){
         console.log('stderr', error)
       }
@@ -270,9 +270,9 @@ function $isAppRunning(appName, appNameZh){
   })
 }
 //显示桌面
-function $showLaunch(){
-  execSync(`adb shell setprop sys.thirdapk.caninstall 1`)
-  execSync(`adb shell am force-stop com.android.launcherWT`)
+function $showLaunch(serial){
+  execSync(`adb -s ${serial} shell setprop sys.thirdapk.caninstall 1`)
+  execSync(`adb -s ${serial} shell am force-stop com.android.launcherWT`)
 }
 
 

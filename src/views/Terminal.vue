@@ -1,22 +1,29 @@
 <template>
     <div class="container">
+        <v-row v-for="device in deviceList" :key="device.serial">
+            <v-col>{{device.hostIP}}</v-col>
+            <v-col>{{device.nickname}}</v-col>
+            <v-col>{{device.serial}}</v-col>
+            <v-col>{{device.status}}</v-col>
+        </v-row>
+
         <v-row>
-            <v-col md="11"><v-text-field v-model="inputText"></v-text-field></v-col>
+            <!-- <v-col md="11"><v-text-field v-model="inputText"></v-text-field></v-col> -->
             <v-col md="1"><v-btn  class="ma-2"  outlined  color="indigo" @click="sendMsg">发送</v-btn></v-col>
         </v-row>
         
-        <v-btn  class="ma-2"  outlined  color="indigo" @click="closeClient">关闭客户端</v-btn>
+        <!-- <v-btn  class="ma-2"  outlined  color="indigo" @click="closeClient">关闭客户端</v-btn> -->
     </div>
 </template>
 <script>
-
 
 export default {
     data(){
         return {
             path: 'ws://10.1.42.27:8181/websocket1',
             inputText: '',
-            socket: null
+            socket: null,
+            deviceList: []
         }
     },
     created(){
@@ -38,10 +45,10 @@ export default {
                     console.log('socket is open')
                 }
                 this.socket.onmessage = res => {
-                    console.log('client receive', res.data)
+                    this.deviceList = JSON.parse(res.data)
                 }
                 this.socket.onclose = () =>{
-                    console.log('client cloes')
+                    console.log('client close')
                 }
                 this.socket.onerror = err =>{
                     console.log('client error', err)
@@ -50,10 +57,8 @@ export default {
         },
         //发送消息
         sendMsg(){
-            let text = this.inputText
-            if(text != ''){
-                this.socket.send('client1 send:'+ text)
-            }
+            let device = {type: 'addDevice',hostIP: '192.168.0.1', nickname: 'yifeixiang', serial: new Date().getTime(), status: 'online'}
+            this.socket.send(JSON.stringify(device))
         },
         //关闭客户端
         closeClient(){
