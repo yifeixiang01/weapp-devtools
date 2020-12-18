@@ -6716,6 +6716,11 @@ node-releases@^1.1.65:
   resolved "https://registry.npm.taobao.org/node-releases/download/node-releases-1.1.65.tgz#52d9579176bd60f23eba05c4438583f341944b81"
   integrity sha1-UtlXkXa9YPI+ugXEQ4WD80GUS4E=
 
+nodejs-websocket@^1.7.2:
+  version "1.7.2"
+  resolved "https://registry.npm.taobao.org/nodejs-websocket/download/nodejs-websocket-1.7.2.tgz#94abd1e248f57d4d1c663dec3831015c6dad98a6"
+  integrity sha1-lKvR4kj1fU0cZj3sODEBXG2tmKY=
+
 normalize-package-data@^2.3.2, normalize-package-data@^2.5.0:
   version "2.5.0"
   resolved "https://registry.npm.taobao.org/normalize-package-data/download/normalize-package-data-2.5.0.tgz#e66db1838b200c1dfc233225d12cb36520e234a8"
