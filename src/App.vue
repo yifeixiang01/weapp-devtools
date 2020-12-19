@@ -45,7 +45,7 @@ export default {
   created(){
     adb.onDevices({
       onadd: ({device, list}) => {
-        console.log('有设备连接', device)
+        console.log('有新设备连接', device)
         list = this.formateList(list)
         // console.log(list)
         this.$store.commit({type: 'changeLocalList', list})
@@ -60,6 +60,7 @@ export default {
         console.log('监听设备失败')
       }
     })
+    
   },
   methods: {
     formateList(deviceList){

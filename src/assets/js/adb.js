@@ -77,7 +77,16 @@ const disconnect = ({ sender }, ip) => {
 		sender.send('connect', { success: false, message: 'Device shutdown failed' })
 	})
 }
+let port = 5555;
+const tcpip = (serial) => {
+	client.tcpip(serial, port)
+		.then(res => {
+			console.log('tcpip连接',res)
+		}).catch(err => {
+			console.log('tcpip连接出错',err)	
+		})
+}
 
 export default {
-	connect, disconnect, onDevices
+	connect, disconnect, onDevices, tcpip
 }

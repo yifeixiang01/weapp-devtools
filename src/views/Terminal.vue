@@ -25,8 +25,8 @@
 </template>
 <script>
 import { mapState } from 'vuex'
-import {$shareDevice} from '../assets/js/tools'
-
+import { $shareDevice} from '../assets/js/tools'
+// import adb from '../assets/js/adb'
 
 export default {
     data(){
@@ -70,7 +70,7 @@ export default {
                     this.isSocketOpen = false
                 }
                 this.socket.onerror = () =>{
-                    console.log('客户端连接失败')
+                    console.log('连接服务器失败！')
                     alert('连接服务器失败！')
                 }
             }
@@ -88,12 +88,14 @@ export default {
         shareDevice(index){
             let serial = this.localDeviceList[index].serial
 
-            $shareDevice(serial).then(res => {
-                console.log(res)
+            $shareDevice(serial).then(() => {
+                // console.log(res)
             }).catch(err => {
                 console.log(err)
                 alert(err)
             })
+
+            //adb.tcpip(serial)
         }
     }
 }
