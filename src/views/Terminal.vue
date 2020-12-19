@@ -1,57 +1,77 @@
 <template>
     <div class="container">
-        <v-row v-for="device in deviceList" :key="device.serial">
+        <v-row v-for="(device, index) in localDeviceList" :key="device.serial">
             <v-col>{{device.hostIP}}</v-col>
-            <v-col>{{device.nickname}}</v-col>
+            <v-col>{{device.owner}}</v-col>
             <v-col>{{device.serial}}</v-col>
             <v-col>{{device.status}}</v-col>
+            <v-col><v-btn text color="primary" @click="shareDevice(index)" v-if="isSocketOpen">{{device.isShare? '取消共享': '共享'}}</v-btn></v-col>
         </v-row>
-
-        <v-row>
-            <!-- <v-col md="11"><v-text-field v-model="inputText"></v-text-field></v-col> -->
-            <v-col md="1"><v-btn  class="ma-2"  outlined  color="indigo" @click="sendMsg">发送</v-btn></v-col>
+        <v-divider></v-divider>
+        <v-row  v-if="!isSocketOpen">
+            <v-col class="text-center"><v-btn @click="createClient">连接服务器</v-btn></v-col>
         </v-row>
         
-        <!-- <v-btn  class="ma-2"  outlined  color="indigo" @click="closeClient">关闭客户端</v-btn> -->
+        <v-row v-else>
+            <v-row v-for="device in remoteDeviceList" :key="device.serial">
+                <v-col>{{device.hostIP}}</v-col>
+                <v-col>{{device.owner}}</v-col>
+                <v-col>{{device.serial}}</v-col>
+                <v-col>{{device.status}}</v-col>
+            </v-row>
+        </v-row>
+        
     </div>
 </template>
 <script>
+import { mapState } from 'vuex'
+import {$shareDevice} from '../assets/js/tools'
+
 
 export default {
     data(){
         return {
-            path: 'ws://10.1.42.27:8181/websocket1',
-            inputText: '',
-            socket: null,
-            deviceList: []
+            isSocketOpen: false
         }
     },
     created(){
         
     },
     mounted(){
-        this.init();
-
+        this.createClient();
+    },
+    computed:{
+        ...mapState(['localDeviceList', 'remoteDeviceList'])
     },
     methods: {
-        init(){
+        createClient(){
             if (typeof WebSocket === "undefined") {
                 alert("您的浏览器不支持socket");
             } else {
                 // 实例化socket
-                this.socket = new WebSocket("ws://10.1.42.27:8181/websocket1");
+                this.socket = new WebSocket("ws://192.168.0.109:8181/websocket1");
 
                 this.socket.onopen = () => {
                     console.log('socket is open')
+                    this.isSocketOpen = true
                 }
-                this.socket.onmessage = res => {
-                    this.deviceList = JSON.parse(res.data)
+                this.socket.onmessage = message => {   
+                    let data = JSON.parse(message.data)
+
+                    switch(data.type){
+                        case 'deviceList': this.$store.commit({type: 'changeRemoteList', list: data.list}); break;
+                        default: 
+                            console.log('没有匹配到要执行的命令');
+                    }
+                   
                 }
                 this.socket.onclose = () =>{
                     console.log('client close')
+                    this.isSocketOpen = false
                 }
-                this.socket.onerror = err =>{
-                    console.log('client error', err)
+                this.socket.onerror = () =>{
+                    console.log('客户端连接失败')
+                    alert('连接服务器失败！')
                 }
             }
         },
@@ -63,6 +83,17 @@ export default {
         //关闭客户端
         closeClient(){
             this.socket.close();
+        },
+        //共享设备
+        shareDevice(index){
+            let serial = this.localDeviceList[index].serial
+
+            $shareDevice(serial).then(res => {
+                console.log(res)
+            }).catch(err => {
+                console.log(err)
+                alert(err)
+            })
         }
     }
 }
@@ -76,4 +107,3 @@ export default {
         height: 500px;
     }
 </style>
-

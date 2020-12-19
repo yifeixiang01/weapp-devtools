@@ -25,14 +25,13 @@
 
 <script>
 
+import adb from './assets/js/adb'
 
 export default {
   name: 'App',
-
   components: {
     
   },
-
   data: () => ({
     items: [
       { title: 'Home', route: '/', icon: 'mdi-view-dashboard' },
@@ -42,6 +41,36 @@ export default {
       {title: '终端', route: "Terminal", icon: 'mdi-dialpad'}
     ],
     mini: true,
-  })
+  }),
+  created(){
+    adb.onDevices({
+      onadd: ({device, list}) => {
+        console.log('有设备连接', device)
+        list = this.formateList(list)
+        // console.log(list)
+        this.$store.commit({type: 'changeLocalList', list})
+      },
+      onremove: ({device, list}) => {
+        console.log('设备断开', device)
+        list = this.formateList(list)
+        // console.log(list)
+        this.$store.commit({type: 'changeLocalList', list})
+      },
+      onend: () => {
+        console.log('监听设备失败')
+      }
+    })
+  },
+  methods: {
+    formateList(deviceList){
+      let arr = []
+      deviceList.forEach(item => {
+        let {id: serial, type:status} = item
+        arr.push({hostIP: '192.168.0.109', owner: 'yifeixiang', serial, status, isShare: false})
+      })
+      return arr
+    }
+    
+  }
 }
 </script>

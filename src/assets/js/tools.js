@@ -1,3 +1,5 @@
+import { reject } from "bluebird";
+
 const { exec, execSync, spawn} = window.require('child_process')
 const fs = window.require('fs')
 
@@ -275,7 +277,64 @@ function $showLaunch(serial){
   execSync(`adb -s ${serial} shell am force-stop com.android.launcherWT`)
 }
 
+let port = 5555
 
+
+//端口映射
+function $shareDevice(serial){
+  return new Promise((resolve) => {
+    let flag = true
+    console.log('------开始端口映射----', flag)
+    
+    // 端口范围为0-65535
+    if(port < 65536){
+      
+      let workerProcess = exec(`adbkit usb-device-to-tcp -p ${port} ${serial}`, (error, stdout, stderr) => {
+        console.log('++++++port', port)
+        console.log('stdout', stdout)
+        if(error){
+          console.log('error', error)
+        }
+        //端口被占用
+        if(stderr.indexOf('EADDRINUSE') !== -1){
+          
+          console.log('stderr',stderr)
+          console.log(`端口:${port}被占用,打开新端口:${port + 1}`)
+          port++;
+          flag = false
+          return $shareDevice(serial)
+        }
+        
+      })
+
+      workerProcess.on('close', code => {
+        console.log('命令执行结束', code, flag, port)
+        if(flag){
+          flag = true
+          console.log('端口映射成功', port)
+          resolve('端口映射成功')
+        }
+      })
+    }else{
+      reject('没有可用端口')
+    }
+    
+    
+
+    // var result = spawn('adbkit usb-device-to-tcp', [`-p ${port} ${serial}`]);
+    // result.on('close', function(code) {
+    //     console.log('child process exited with code :' + code);
+    // });
+    // result.stdout.on('data', function(data) {
+    //     console.log('stdout: ' + data);
+    // });
+    // result.stderr.on('data', function(data) {
+    //     console.log('stderr: ' + data);
+
+    // });
+    
+  })
+}
 export {
   $compileFile, 
   $copyFile, 
@@ -290,5 +349,6 @@ export {
   $formateDate, 
   $isExistFileInDevice,
   $isAppRunning,
-  $showLaunch
+  $showLaunch,
+  $shareDevice
 }

@@ -22,3 +22,4 @@ TODOLIST:
 13、内置终端（xterm, node-pty）
 14、安装时可以选择安装的目录
 15、搭建socket服务
+16、添加日志功能

@@ -1,20 +1,18 @@
 'use strict'
 
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow, ipcMain } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 // import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
-// import adb from './main/adb'
-// Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
 
 async function createWindow () {
   // Create the browser window.
-  const win = new BrowserWindow({
+  const mainWindow = new BrowserWindow({
     width: 770,
     height: 480,
     maximizable: false,
@@ -34,15 +32,19 @@ async function createWindow () {
   }
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
-    await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
-    if (!process.env.IS_TEST) win.webContents.openDevTools()
+    await mainWindow.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
+    if (!process.env.IS_TEST) mainWindow.webContents.openDevTools()
   } else {
     createProtocol('app')
     // Load the index.html when not in development
-    win.loadURL('app://./index.html')
+    mainWindow.loadURL('app://./index.html')
   }
   
-
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show()
+    
+  })
+		
 }
 
 // Quit when all windows are closed.
@@ -61,8 +63,8 @@ app.on('activate', () => {
 })
 
 
+
 app.on('ready', async () => {
-  
   createWindow()
 })
 
