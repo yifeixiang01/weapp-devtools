@@ -13,8 +13,8 @@ protocol.registerSchemesAsPrivileged([
 async function createWindow () {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 770,
-    height: 480,
+    width: 940,
+    height: 600,
     maximizable: false,
     // icon: 'public/icon.ico',
     webPreferences: {

@@ -14,9 +14,6 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-
-
-
     <v-main>
       <router-view></router-view>
     </v-main>
@@ -26,6 +23,7 @@
 <script>
 
 import adb from './assets/js/adb'
+import { mapState } from 'vuex'
 
 export default {
   name: 'App',
@@ -43,35 +41,41 @@ export default {
     mini: true,
   }),
   created(){
-    adb.onDevices({
-      onadd: ({device, list}) => {
-        console.log('有新设备连接', device)
-        list = this.formateList(list)
-        // console.log(list)
-        this.$store.commit({type: 'changeLocalList', list})
-      },
-      onremove: ({device, list}) => {
-        console.log('设备断开', device)
-        list = this.formateList(list)
-        // console.log(list)
-        this.$store.commit({type: 'changeLocalList', list})
-      },
-      onend: () => {
-        console.log('监听设备失败')
-      }
-    })
     
+    this.onDevices();
+  },
+  computed:{
+    ...mapState(['clinetInfo'])
   },
   methods: {
+    //监听本地连接的设备变化
+    onDevices(){
+      adb.onDevices({
+        onadd: ({device, list}) => {
+          console.log('有新设备连接', device)
+          list = this.formateList(list)
+          // console.log(list)
+          this.$store.commit({type: 'changeLocalList', list})
+        },
+        onremove: ({device, list}) => {
+          console.log('设备断开', device)
+          list = this.formateList(list)
+          // console.log(list)
+          this.$store.commit({type: 'changeLocalList', list})
+        },
+        onend: () => {
+          console.log('监听设备失败')
+        }
+      })
+    },
     formateList(deviceList){
       let arr = []
       deviceList.forEach(item => {
         let {id: serial, type:status} = item
-        arr.push({hostIP: '192.168.0.109', owner: 'yifeixiang', serial, status, isShare: false})
+        arr.push({owner: this.clinetInfo.nickname, serial, status, isShared: false})
       })
       return arr
     }
-    
   }
 }
 </script>

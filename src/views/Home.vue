@@ -3,69 +3,61 @@
     <v-row @drop="onDrop($event)" @dragover="onDragover($event)">
       <v-col md="12">
         <v-data-table  :headers="headers"  :items="weappList" item-key="name" hide-default-footer :show-select="true" v-model="selected" :single-select="isSingleSelect" @item-selected="selectWeapp" >
-          <template v-slot:top>
-            <v-toolbar flat>
-              <v-spacer></v-spacer>
-
-              <v-dialog  v-model="dialog"  max-width="600px">
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn  color="primary"  dark  class="mb-2" small  v-bind="attrs"  v-on="on">添加小程序</v-btn>
-                </template>
-                <v-card>
-                  <v-card-title>
-                    <span class="headline">{{ formTitle }}</span>
-                  </v-card-title>
-
-                  <v-card-text>
-                    <v-container>
-                      <v-row>
-                        <v-col cols="12"  sm="6"  md="6"><v-text-field  v-model="editedItem.name"  label="小程序"></v-text-field></v-col>
-                        <v-col  cols="12"  sm="6"  md="6"><v-text-field  v-model="editedItem.appName"  label="英文名"></v-text-field></v-col>
-                      </v-row>
-                      <v-row>
-                        <v-col  cols="12"  sm="11"  md="11"><v-text-field  v-model="editedItem.path"  label="项目路径"></v-text-field></v-col>
-                        <v-col  cols="12"  sm="1"  md="1"><v-file-input type="file" webkitdirectory hide-input @change="selectFile"></v-file-input></v-col>
-                      </v-row>
-                    </v-container>
-                  </v-card-text>
-
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn  color="blue darken-1"  text  @click="close">取消</v-btn>
-                    <v-btn  color="blue darken-1"  text  @click="save">保存</v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-
-              <v-dialog v-model="dialogDelete" max-width="500px">
-                <v-card>
-                  <v-card-title class="headline">确定删除“{{editedItem.name}}”小程序吗?</v-card-title>
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" text @click="closeDelete">取消</v-btn>
-                    <v-btn color="blue darken-1" text @click="deleteItemConfirm">确定</v-btn>
-                    <v-spacer></v-spacer>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-
-            </v-toolbar>
-          </template>
-
-
           <template v-slot:[`item.selected`]="{ item }">
             <v-icon small  class="mr-2"  @click="editItem(item)">mdi-pencil</v-icon>
             <v-icon  small  @click="deleteItem(item)">mdi-delete</v-icon>
           </template>
         </v-data-table>
-
         <div class="text-center">
           <v-btn  class="ma-2"  outlined  color="indigo" @click="runCompile">开始编译</v-btn>
         </div>
       </v-col>
     </v-row>
-    <!-- <v-btn @click="showToast">toast</v-btn> -->
 
+
+    <!-- button: 添加小程序 -->
+    <v-btn class="mx-2 add-btn" x-small  fab  dark  color="indigo" @click="addWeapp" ><v-icon dark> mdi-plus</v-icon></v-btn>
+
+    <!-- 添加或编辑小程序对话框 -->
+    <v-dialog  v-model="dialog"  max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="headline">{{ formTitle }}</span>
+        </v-card-title>
+
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12"  sm="6"  md="6"><v-text-field  v-model="editedItem.name"  label="小程序"></v-text-field></v-col>
+              <v-col  cols="12"  sm="6"  md="6"><v-text-field  v-model="editedItem.appName"  label="英文名"></v-text-field></v-col>
+            </v-row>
+            <v-row>
+              <v-col  cols="12"  sm="11"  md="11"><v-text-field  v-model="editedItem.path"  label="项目路径"></v-text-field></v-col>
+              <v-col  cols="12"  sm="1"  md="1"><v-file-input type="file" webkitdirectory hide-input @change="selectFile"></v-file-input></v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn  color="blue darken-1"  text  @click="close">取消</v-btn>
+          <v-btn  color="blue darken-1"  text  @click="save">保存</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- 删除小程序对话框 -->
+    <v-dialog v-model="dialogDelete" max-width="500px">
+      <v-card>
+        <v-card-title class="headline">确定删除“{{editedItem.name}}”小程序吗?</v-card-title>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" text @click="closeDelete">取消</v-btn>
+          <v-btn color="blue darken-1" text @click="deleteItemConfirm">确定</v-btn>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -73,11 +65,9 @@
 
 const fs = window.require('fs')
 import {$compileFile, $copyFile, $pushToMobile, $isExistFileInDevice, $getDevices, $isAppRunning} from '../assets/js/tools'
-const  ElectronStore = window.require('electron-store')
-const electronStore = new ElectronStore();
 
 // import {$toast} from '../utils'
-
+import { mapState } from 'vuex'
 export default {
   components:{
     
@@ -88,9 +78,6 @@ export default {
   },
   data(){
     return {
-      config: {
-
-      },
       isSingleSelect: true,
       selected: [],
       headers: [
@@ -99,7 +86,6 @@ export default {
         {text: '项目路径',value: 'path'},
         {text: '', value: 'selected'}
       ],
-      weappList : [],
       defaultItem: {},
       dialog: false,
       dialogDelete: false,
@@ -111,12 +97,14 @@ export default {
     }
   },
   created() {
-    this.getWeappList();
+    this.getSelectedList();
+    console.log(this.weappList, this.config, this.mirrorConfig)
   },
   computed: {
     formTitle () {
       return this.editedIndex === -1 ? '添加' : '修改'
     },
+    ...mapState(['config','weappList', 'mirrorConfig'])
   },
   watch: {
       dialog (val) {
@@ -128,17 +116,14 @@ export default {
   },
   methods: {
     //读取小程序列表
-    getWeappList(){
-      this.weappList = electronStore.get('weappList') || []
+    getSelectedList(){
       this.selected = this.weappList.filter(item => item.selected)
-      console.log('获取到小程序列表',this.weappList)
     },
     //开始运行 编译->拷贝->push到车机
     runCompile(){
       //获取配置信息
-      let value = electronStore.get('weappConfig')
+      let value = this.config
       let {weappCompilePath, wechatDevtoolsPath, weappSavePath} = value
-      console.log('配置信息', value)
       if(!weappCompilePath || !wechatDevtoolsPath || !weappSavePath){
         console.log('没有配置文件')
         this.$router.go('About')
@@ -182,7 +167,10 @@ export default {
         }
       })
 
-      electronStore.set('weappList', this.weappList)
+      this.$store.commit({type: 'setWeappList', weappList: this.weappList})
+    },
+    addWeapp(){
+      this.dialog = true
     },
     editItem (item) {
       console.log(item)
@@ -202,12 +190,15 @@ export default {
         this.editedItem = Object.assign({}, this.defaultItem)
       })
     },
+    //确认删除小程序item
     deleteItemConfirm () {
       console.log(this.editedIndex)
       this.weappList.splice(this.editedIndex, 1)
-      electronStore.set('weappList', this.weappList)
+      this.$store.commit({type: 'setWeappList', weappList: this.weappList})
+      let weappList = this.weappList;
+      let listLen = weappList.length;
       //如果删除的item是选中的，需要清空选中的
-      if(this.weappList[this.editedIndex].weappName == this.selected[0]){
+      if(listLen == 0 || weappList[this.editedIndex].weappName == this.selected[0]){
         this.selected = []
       }
       this.closeDelete()
@@ -230,7 +221,7 @@ export default {
       }else if(name && appName && path){
         this.weappList.push(this.editedItem)
 
-        electronStore.set('weappList', this.weappList)
+        this.$store.commit({type: 'setWeappList', weappList: this.weappList})
       }
       
       this.close()
@@ -306,5 +297,11 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+  .add-btn{
+    position:fixed;
+    right: 20px;
+    top: 20px;
+
   }
 </style>

@@ -1,49 +1,63 @@
 <template>
     <div class="container">
-        <v-row v-for="(device, index) in localDeviceList" :key="device.serial">
-            <v-col>{{device.hostIP}}</v-col>
-            <v-col>{{device.owner}}</v-col>
-            <v-col>{{device.serial}}</v-col>
-            <v-col>{{device.status}}</v-col>
-            <v-col><v-btn text color="primary" @click="shareDevice(index)" v-if="isSocketOpen">{{device.isShare? '取消共享': '共享'}}</v-btn></v-col>
-        </v-row>
-        <v-divider></v-divider>
-        <v-row  v-if="!isSocketOpen">
-            <v-col class="text-center"><v-btn @click="createClient">连接服务器</v-btn></v-col>
-        </v-row>
-        
-        <v-row v-else>
-            <v-row v-for="device in remoteDeviceList" :key="device.serial">
-                <v-col>{{device.hostIP}}</v-col>
-                <v-col>{{device.owner}}</v-col>
-                <v-col>{{device.serial}}</v-col>
-                <v-col>{{device.status}}</v-col>
+        <div class="device-wrap">
+            <v-data-table  :headers="headers1"  :items="localDeviceList" hide-default-footer :show-select="true" v-model="selectedDevice" :single-select="true" @item-selected="selectDevice" >
+                <template v-slot:[`item.selected`]="{ item }">
+                    <v-btn text color="primary" @click="shareDevice(item)" v-if="isSocketOpen && (item.serial.indexOf(':') == -1)">{{!item.isShared? '共享': ''}}</v-btn>
+                    <v-btn text color="primary" @click="cancelShareDevice(item)" v-if="isSocketOpen && (item.serial.indexOf(':') == -1)">{{item.isShared? '取消共享': ''}}</v-btn>
+                    <v-btn text color="primary" @click="disconnectDevice(item)" v-if="item.serial.indexOf(':') > -1">断开连接</v-btn>
+                </template>
+            </v-data-table>
+        </div>
+        <div class="device-wrap2">
+            <v-row  v-if="!isSocketOpen">
+                <v-col class="text-center"><v-btn @click="createClient">连接服务器</v-btn></v-col>
             </v-row>
-        </v-row>
+            <div v-else>
+                <v-row v-for="device in remoteDeviceList" :key="device.serial">
+                    <v-col sm="2">{{device.hostIP}}</v-col>
+                    <v-col sm="2">{{device.owner}}</v-col>
+                    <v-col sm="3">{{device.serial}}</v-col>
+                    <v-col sm="2">{{device.status}}</v-col>
+                </v-row>
+            </div>
+            
+        </div>
+        
         
     </div>
 </template>
 <script>
 import { mapState } from 'vuex'
-import { $shareDevice} from '../assets/js/tools'
-// import adb from '../assets/js/adb'
+import { $shareDevice, $disconnect} from '../assets/js/tools'
 
 export default {
     data(){
         return {
+            headers1: [
+                {text: 'owner', value: 'owner'},
+                {text: 'serial', value: 'serial'},
+                {text: 'status', value: 'status'},
+                {text: 'operation', value: 'selected'}
+            ],
+            selectedDevice: [],
             isSocketOpen: false
         }
     },
     created(){
-        
+        console.log('--------clientInfo', this.clinetInfo)
+        console.log('localDeviceList', this.localDeviceList)
     },
     mounted(){
         this.createClient();
     },
     computed:{
-        ...mapState(['localDeviceList', 'remoteDeviceList'])
+        ...mapState(['localDeviceList', 'remoteDeviceList', 'clinetInfo'])
     },
     methods: {
+        selectDevice(row){
+            console.log(row)
+        },
         createClient(){
             if (typeof WebSocket === "undefined") {
                 alert("您的浏览器不支持socket");
@@ -56,10 +70,13 @@ export default {
                     this.isSocketOpen = true
                 }
                 this.socket.onmessage = message => {   
+                    console.log('客户端接收信息', message.data)
                     let data = JSON.parse(message.data)
 
                     switch(data.type){
+                        case 'updateClientMsg': this.changeClientMsg(data.id); break;
                         case 'deviceList': this.$store.commit({type: 'changeRemoteList', list: data.list}); break;
+                        case 'shareDeviceSuccess': this.shareDeviceSuccess(data.serial); break;
                         default: 
                             console.log('没有匹配到要执行的命令');
                     }
@@ -75,9 +92,17 @@ export default {
                 }
             }
         },
+        changeClientMsg(id){
+            console.log('修改客户端信息')
+            this.$store.commit({type: 'changeBaseInfo', id});
+            let {hostIP, nickname} = this.clinetInfo
+            let message = {type: 'updateClientMsg', id: id, hostIP, nickname}
+            this.socket.send(JSON.stringify(message))
+        },
         //发送消息
         sendMsg(){
-            let device = {type: 'addDevice',hostIP: '192.168.0.1', nickname: 'yifeixiang', serial: new Date().getTime(), status: 'online'}
+            let {id} = this.clinetInfo
+            let device = {type: 'addDevice', id, device: {}}
             this.socket.send(JSON.stringify(device))
         },
         //关闭客户端
@@ -85,24 +110,61 @@ export default {
             this.socket.close();
         },
         //共享设备
-        shareDevice(index){
-            let serial = this.localDeviceList[index].serial
+        shareDevice(item){
+            let serial = item.serial
+            let {id, hostIP, nickname} = this.clinetInfo
+            console.log(item)
+            if(!item.isShared){
+                $shareDevice(serial, hostIP, port => {
+                    console.log('_+_+_+_+_+_+',port)
+                    
+                    let {serial,status} = item
+                    let device = {serial, owner: nickname, status}
+                    
+                    let message = {type: 'shareDevice', id, device}
+                    console.log('向服务端共享设备', message)
+                    this.socket.send(JSON.stringify(message))
+                })
+            }
 
-            $shareDevice(serial).then(() => {
-                // console.log(res)
-            }).catch(err => {
-                console.log(err)
-                alert(err)
+        },
+        cancelShareDevice(item){
+            let serial = item.serial
+            let {id} = this.clinetInfo
+
+            if(item.isShared){
+                let message = {type: 'removeDevice', id, serial}
+                this.socket.send(JSON.stringify(message))
+            }
+        },
+        shareDeviceSuccess(serial){
+            let list = JSON.parse(JSON.stringify(this.localDeviceList))
+            list.forEach(item => {
+                if(item.serial === serial){
+                    item.isShared = true
+                }
             })
-
-            //adb.tcpip(serial)
+            this.$store.commit({type: 'changeLocalList', list})
+        },
+        //断开连接
+        disconnectDevice(item){
+            let serial = item.serial
+            $disconnect(serial)
         }
     }
 }
 </script>
 <style lang="stylus">
     .container{
+        height: 100%;
         position: relative;
+    }
+    .device-wrap{
+        flex: 1;
+    }
+    .device-wrap2{
+        border-top: 1px solid rgba(0, 0, 0, 0.12);
+        flex: 2;
     }
     #terminal{
         width: 100%;

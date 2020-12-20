@@ -4,6 +4,11 @@
     <v-container>
       <v-row>
         <v-col>
+          <v-text-field  label="用户名"  :rules="nacknameRules" v-model="config.nickname"></v-text-field>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col>
           <v-text-field  label="微信开发工具安装目录"  :rules="devtoolRules" v-model="config.wechatDevtoolsPath"></v-text-field>
         </v-col>
       </v-row>
@@ -27,13 +32,14 @@
 
 <script>
 const fs = window.require('fs')
-
-const  ElectronStore = window.require('electron-store')
-const electronStore = new ElectronStore();
+import { mapState } from 'vuex'
 
 export default {
     data: () => ({
       valid:true,
+      nacknameRules: [
+        value => !!value || '服务端需要您的用户名以区分不同设备的归属',
+      ],
       devtoolRules: [
         value => !!value || '需要输入微信开发工具的安装目录',
         value => {
@@ -65,25 +71,18 @@ export default {
           }
         }
       ],
-      config: {
-        
-      }
     }),
     computed: {
-
+      ...mapState(['config'])
     },
     watch: {
 
     },
     created () {
-      this.getConfig();
+      console.log(this.config)
 
     },
     methods: {
-      getConfig(){
-        this.config = electronStore.get('weappConfig') || {}
-        console.log('配置信息', this.config)
-      },
       //选择文件
       selectFile(file){
         console.log(file)
@@ -92,18 +91,21 @@ export default {
         }
       },
       submit(){
-        this.$refs.form.validate()
-        //转化路径格式
-        let wechatDevtoolsPath = this.config.wechatDevtoolsPath.replace(/\\/g, '/')
-        let weappCompilePath = this.config.weappCompilePath.replace(/\\/g, '/')
-        let weappSavePath = this.config.weappSavePath.replace(/\\/g, '/')
+        if(this.$refs.form.validate()){
+          //转化路径格式
+          let wechatDevtoolsPath = this.config.wechatDevtoolsPath.replace(/\\/g, '/')
+          let weappCompilePath = this.config.weappCompilePath.replace(/\\/g, '/')
+          let weappSavePath = this.config.weappSavePath.replace(/\\/g, '/')
+          let nickname = this.config.nickname
+          let index = weappCompilePath.indexOf('__APP__')
+          if(index != -1){
+            weappCompilePath = weappCompilePath.slice(0, index)
+          } 
 
-        let index = weappCompilePath.indexOf('__APP__')
-        if(index != -1){
-          weappCompilePath = weappCompilePath.slice(0, index)
-        } 
-
-        electronStore.set('weappConfig', {wechatDevtoolsPath, weappCompilePath, weappSavePath})
+          this.$store.commit('setConfig', {wechatDevtoolsPath, weappCompilePath, weappSavePath, nickname})
+          alert('保存成功！')
+        }
+        
       }
     }
   }

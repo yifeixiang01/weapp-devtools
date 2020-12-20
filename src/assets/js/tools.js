@@ -1,8 +1,9 @@
-import { reject } from "bluebird";
 
+
+import adb from './adb'
 const { exec, execSync, spawn} = window.require('child_process')
 const fs = window.require('fs')
-
+const os = window.require('os')
 
 //将小程序进行编译，并生成.wxapkg文件
 function $compileFile(weappName, projectPath, weappCompilePath, wechatDevtoolsPath){
@@ -79,14 +80,13 @@ function $copyFile(resourcePath, aimPath){
     
 }
 //调用adb命令将小程序包push到车机or手机
-function $pushToMobile(pkgPath, weappName, appName){
-  
+function $pushToMobile(pkgPath, weappName, appName, serial){
   return new Promise((resolve, reject) => {
     console.log('-----开始将小程序包push到车机')
     let pathInCar = (appName === 'debug')? 'sdcard/moss/weapp': `data/data/com.tencent.wecarmas/files/moss/${weappName}/pkg`
     //先判断设备上将要push的目录是否存在
     $isExistFileInDevice(pathInCar).then(() => {
-      let workerProcess = exec(`adb push ${pkgPath} ${pathInCar}`, {cwd: './'})
+      let workerProcess = exec(`adb -s ${serial} push ${pkgPath} ${pathInCar}`, {cwd: './'})
   
       workerProcess.stdout.on('data', data =>{
           console.log('push stdout', data)
@@ -201,7 +201,6 @@ function $getDevices(){
   
 }
 function $startCMD(){
-
     var result = spawn('cmd.exe', ['/s', '/c', 'ipconfig']);
     result.on('close', function(code) {
         console.log('child process exited with code :' + code);
@@ -277,65 +276,27 @@ function $showLaunch(serial){
   execSync(`adb -s ${serial} shell am force-stop com.android.launcherWT`)
 }
 
-let port = 5555
-
-var flagData = {flag: true}
+let port = 5700
 //端口映射
-function $shareDevice(serial){
-  return new Promise(() => {
-    flagData.flag = true
-    console.log('------开始端口映射----', flagData.flag)
-    
-    // 端口范围为0-65535
-    if(port < 65536){
-      let workerProcess = exec(`adbkit usb-device-to-tcp -p ${port} ${serial}`, 
-      (error, stdout, stderr) => {
-        console.log('++++++port', port)
-        console.log('stdout', stdout)
-        if(error){
-          console.log('error', error)
-        }
-        //端口被占用
-        if(stderr.indexOf('EADDRINUSE') !== -1){
-          
-           console.log('stderr',stderr)
-          console.log(`端口:${port}被占用,打开新端口:${port + 1}`)
-          port++;
-          return $shareDevice(serial)
-        }
-        
-      }
-      )
-      console.log(workerProcess)
-      // workerProcess.stdout.on('error', data =>{
-      //   console.log('stdout', data)
-      // })
-      // workerProcess.stderr.on('data', data =>{
-      //     console.log('stderr', data)
+function $shareDevice(serial, hostIP, callback){
+    adb.usbDeviceToTcp(serial, port).then(() => {
+      console.log(hostIP)
+      // execSync(`adb start-server ${hostIP}:${serial}`)
+      console.log('success++++++++', port)
+      callback && callback(port)
+      
 
-      //     if(data.indexOf('EADDRINUSE') !== -1){
-          
-      //       console.log(`端口:${port}被占用,打开新端口:${port + 1}`)
-      //       port++;
-      //       flagData.flag = false
-      //       return $shareDevice(serial)
-      //     }
-      // })
-      // workerProcess.on('close', code => {
-      //   console.log('命令执行结束', code, flagData.flag, port)
-      //   if(flagData.flag){
-      //     flagData.flag = true
-      //     console.log('端口映射成功', port)
-      //     resolve('端口映射成功')
-      //   }
-      // })
-    }else{
-      reject('没有可用端口')
-    }
-  })
+    }).catch((err)=> {
+      if(err.indexOf('EADDRINUSE') > -1){
+        console.log(`端口${port}被占用，将使用端口${port + 1}`)
+        port++
+        return $shareDevice(serial, port, callback)
+      }
+    })
 }
 function $shareDevice2(serial){
-  var result = spawn('adbkit usb-device-to-tcp', [`-p ${serial}`]);
+  return new Promise(() => {
+    var result = spawn('adbkit', ['--htlp', 'usb-device-to-tcp', `-p ${serial}`]);
     result.on('close', function(code) {
         console.log('child process exited with code :' + code);
     });
@@ -344,9 +305,29 @@ function $shareDevice2(serial){
     });
     result.stderr.on('data', function(data) {
         console.log('stderr: ' + data);
-
     });
+    
+  })
 }
+//断开设备
+function $disconnect(serial){
+  execSync(`adb disconnect ${serial}`)
+}
+
+//获取电脑IP地址
+function $getIPAddress(){
+  var interfaces = os.networkInterfaces();
+    for (var devName in interfaces) {
+        var iface = interfaces[devName];
+        for (var i = 0; i < iface.length; i++) {
+            var alias = iface[i];
+            if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+                return alias.address;
+            }
+        }
+    }
+}
+
 export {
   $compileFile, 
   $copyFile, 
@@ -363,5 +344,7 @@ export {
   $isAppRunning,
   $showLaunch,
   $shareDevice,
-  $shareDevice2
+  $shareDevice2,
+  $disconnect,
+  $getIPAddress
 }

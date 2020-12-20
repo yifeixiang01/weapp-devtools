@@ -49,42 +49,29 @@
 <script>
 const Scrcpy = require('../assets/js/scrcpy')
 const scrcpyTool = new Scrcpy();
-const  ElectronStore = window.require('electron-store')
-const electronStore = new ElectronStore();
+import { mapState } from 'vuex'
 
 export default {
   data: ()=>({
-    mirrorConfig: {
-      windowTitle: '',                     //窗口标题
-      alwaysOnUp: false,                   //保持最前
-      fullscreen: false,                   //全屏启动
-      screenOff: false,                    //黑屏启动
-      borderless: false,                   //无边框
-      stayAwake: false,                    //屏幕常量
-      showTouches: false,                  //显示触摸轨迹
-      disableScreensaver: false,           //关闭屏幕保护
-      record: false,                       //投屏的时候进行录屏
-    },
     valid: true,
     resolution: 1024,
     bitRate: 100,
     isWindowTop: false,
   }),
   created(){
-    this.getConfig();
+    
+  },
+  computed: {
+    ...mapState(['mirrorConfig', 'config'])
   },
   methods: {
-    getConfig(){
-      this.mirrorConfig = electronStore.get('mirrorConfig') || {}
-      console.log('获取镜像配置', this.mirrorConfig)
-    },
     start(){
-      let {weappSavePath} = electronStore.get('weappConfig')
+      let {weappSavePath} = this.config
       console.log('保存目录', weappSavePath)
       scrcpyTool.start(this.mirrorConfig, weappSavePath) 
     },
     submit(){
-      electronStore.set('mirrorConfig', this.mirrorConfig)
+      this.$store.commit({type: 'setMirrorConfig', mirrorConfig: this.mirrorConfig})
     }
   }
 }
