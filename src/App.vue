@@ -14,7 +14,7 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-main>
+    <v-main>  
       <router-view></router-view>
     </v-main>
   </v-app>

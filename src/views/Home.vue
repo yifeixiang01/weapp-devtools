@@ -64,7 +64,7 @@
 <script>
 
 const fs = window.require('fs')
-import {$compileFile, $copyFile, $pushToMobile, $isExistFileInDevice, $getDevices, $isAppRunning} from '../assets/js/tools'
+import {$compileFile, $copyFile, $pushToMobile, $isExistFileInDevice, $isAppRunning} from '../assets/js/tools'
 
 // import {$toast} from '../utils'
 import { mapState } from 'vuex'
@@ -104,7 +104,7 @@ export default {
     formTitle () {
       return this.editedIndex === -1 ? '添加' : '修改'
     },
-    ...mapState(['config','weappList', 'mirrorConfig'])
+    ...mapState(['config','weappList', 'mirrorConfig', 'selectedDevice'])
   },
   watch: {
       dialog (val) {
@@ -124,6 +124,8 @@ export default {
       //获取配置信息
       let value = this.config
       let {weappCompilePath, wechatDevtoolsPath, weappSavePath} = value
+      let {serial} = this.selectedDevice[0]
+      
       if(!weappCompilePath || !wechatDevtoolsPath || !weappSavePath){
         console.log('没有配置文件')
         this.$router.go('About')
@@ -145,12 +147,10 @@ export default {
         let aimPath = `${weappSavePath}/${appName}.wxapkg`
 
         return $copyFile(resourcePath, aimPath)
-      }).then(()=>{
-        return $getDevices()
-      })
-      .then(() => {
+      }).then(() => {
+        
         let pkgPath = `${weappSavePath}/${appName}.wxapkg`
-        return $pushToMobile(pkgPath, weappName, appName)
+        return $pushToMobile(pkgPath, weappName, appName, serial)
       })
       .catch((err) => {
         //console.error(`运行出错:${err}`)
@@ -261,10 +261,9 @@ export default {
           return 
         }
         let {name:weappName, appName} = this.selected[0];
-        $getDevices()
-        .then(()=> {
-          return $pushToMobile(pkgPath, weappName, appName)
-        })
+        let {serial} = this.selectedDevice[0]
+
+        $pushToMobile(pkgPath, weappName, appName, serial)
         .then(()=> {
           alert('push 成功')
         }).catch(err => {
@@ -281,7 +280,8 @@ export default {
       e.preventDefault();
     },
     showToast(){
-      $isExistFileInDevice('sdcard/moss/weapp2')
+      let {serial} = this.selectedDevice[0]
+      $isExistFileInDevice('sdcard/moss/weapp2', serial)
       //$toast({content: new Date().getTime(),duration: '3000', show: true });
     }
   }

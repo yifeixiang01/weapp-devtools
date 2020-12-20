@@ -85,7 +85,7 @@ function $pushToMobile(pkgPath, weappName, appName, serial){
     console.log('-----开始将小程序包push到车机')
     let pathInCar = (appName === 'debug')? 'sdcard/moss/weapp': `data/data/com.tencent.wecarmas/files/moss/${weappName}/pkg`
     //先判断设备上将要push的目录是否存在
-    $isExistFileInDevice(pathInCar).then(() => {
+    $isExistFileInDevice(pathInCar,serial).then(() => {
       let workerProcess = exec(`adb -s ${serial} push ${pkgPath} ${pathInCar}`, {cwd: './'})
   
       workerProcess.stdout.on('data', data =>{

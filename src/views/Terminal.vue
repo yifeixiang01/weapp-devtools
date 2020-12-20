@@ -40,7 +40,7 @@ export default {
                 {text: 'status', value: 'status'},
                 {text: 'operation', value: 'selected'}
             ],
-            selectedDevice: [],
+
             isSocketOpen: false
         }
     },
@@ -52,11 +52,15 @@ export default {
         this.createClient();
     },
     computed:{
-        ...mapState(['localDeviceList', 'remoteDeviceList', 'clinetInfo'])
+        ...mapState(['localDeviceList', 'remoteDeviceList', 'clinetInfo', 'selectedDevice'])
     },
     methods: {
         selectDevice(row){
             console.log(row)
+            let item = row.item
+
+            this.$store.commit({type: 'selectDevice', device: item})
+            console.log(this.selectedDevice)
         },
         createClient(){
             if (typeof WebSocket === "undefined") {
@@ -160,11 +164,12 @@ export default {
         position: relative;
     }
     .device-wrap{
-        flex: 1;
+        height: 40%;
     }
     .device-wrap2{
-        border-top: 1px solid rgba(0, 0, 0, 0.12);
-        flex: 2;
+        border-top: 10px solid rgba(0, 0, 0, 0.12);
+
+        height: 60%;
     }
     #terminal{
         width: 100%;

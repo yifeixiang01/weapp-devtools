@@ -67,6 +67,10 @@ export default new Vuex.Store({
     setMirrorConfig(state, payload){
 
       state.mirrorConfig = payload.mirrorConfig
+    },
+    selectDevice(state, payLoad){
+      console.log(payLoad)
+      state.selectedDevice = [payLoad.device]
     }
   },
   actions: {
