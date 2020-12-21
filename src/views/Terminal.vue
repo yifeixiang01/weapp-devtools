@@ -3,8 +3,8 @@
         <div class="device-wrap">
             <v-data-table  :headers="headers1"  :items="localDeviceList" item-key="serial" hide-default-footer :show-select="true" v-model="selectedDeviceList" :single-select="true" @item-selected="selectDevice" >
                 <template v-slot:[`item.selected`]="{ item }">
-                    <v-btn text color="primary" @click="shareDevice(item)" v-if="isSocketOpen && (item.serial.indexOf(':') == -1)">{{!item.isShared? '共享': ''}}</v-btn>
-                    <v-btn text color="primary" @click="cancelShareDevice(item)" v-if="isSocketOpen && (item.serial.indexOf(':') == -1)">{{item.isShared? '取消共享': ''}}</v-btn>
+                    <v-btn text color="primary" @click="shareDevice(item)" v-if="isSocketOpen && !item.isShared">共享</v-btn>
+                    <v-btn text color="primary" @click="cancelShareDevice(item)" v-if="isSocketOpen && item.isShared">取消共享</v-btn>
                     <v-btn text color="primary" @click="disconnectDevice(item)" v-if="item.serial.indexOf(':') > -1">断开连接</v-btn>
                 </template>
             </v-data-table>
@@ -78,8 +78,9 @@ export default {
             if (typeof WebSocket === "undefined") {
                 alert("您的浏览器不支持socket"); 
             } else {
+                let {hostIP} = this.clinetInfo
                 // 实例化socket
-                this.socket = new WebSocket("ws://10.1.42.27:8181/websocket1");
+                this.socket = new WebSocket(`ws://${hostIP}:8181/websocket1`);
 
                 this.socket.onopen = () => {
                     console.log('socket is open')
@@ -134,8 +135,8 @@ export default {
                 $shareDevice(serial, hostIP, port => {
                     console.log('_+_+_+_+_+_+',port)
                     
-                    let {serial,status} = item
-                    let device = {serial, owner: nickname, status}
+                    let {deviceId, status} = item
+                    let device = {deviceId, serial: `${hostIP}:${port}`, owner: nickname, status}
                     
                     let message = {type: 'shareDevice', id, device}
                     console.log('向服务端共享设备', message)
@@ -145,15 +146,24 @@ export default {
 
         },
         cancelShareDevice(item){
-            let serial = item.serial
+            let deviceId = item.deviceId
             let {id} = this.clinetInfo
 
             if(item.isShared){
-                let message = {type: 'removeDevice', id, serial}
+                let message = {type: 'removeDevice', id, deviceId}
                 this.socket.send(JSON.stringify(message))
+
+                let list = JSON.parse(JSON.stringify(this.localDeviceList))
+                list.forEach(item => {
+                    if(item.deviceId === deviceId){
+                        item.isShared = false
+                    }
+                })
+                this.$store.commit({type: 'changeLocalList', list})
             }
         },
         shareDeviceSuccess(serial){
+            console.log('共享成功', serial)
             let list = JSON.parse(JSON.stringify(this.localDeviceList))
             list.forEach(item => {
                 if(item.serial === serial){

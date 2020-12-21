@@ -54,7 +54,7 @@ export default {
         onadd: ({device, list}) => {
           console.log('有新设备连接', device)
           list = this.formateList(list)
-          
+          console.log(list)
           // console.log(list)
           this.$store.commit({type: 'changeLocalList', list})
         },
@@ -62,7 +62,8 @@ export default {
           console.log('设备断开', device)
           list = this.formateList(list)
 
-          if(device.serial === this.selectedDevice[0].serial){
+          //当断开的设备是已选的设备，将选择数组置空
+          if(this.selectedDevice.length > 0 && device.serial === this.selectedDevice[0].serial){
             this.$store.commit({type: 'removeSelectedDevice'})
           }
           // console.log(list)
@@ -74,15 +75,20 @@ export default {
       })
     },
     formateList(deviceList){
+      let {hostIP} = this.clinetInfo
       let arr = []
       deviceList.forEach(item => {
         let {id: serial, type:status} = item
-        let device = {deviceId: serial, serial, owner: this.clinetInfo.nickname, status, isShared: false}
-        arr.push(device)
+        if(serial.indexOf(hostIP) == -1){   //设备serial中包含本地hostIP，则是连接的本地共享的设备，不显示
+          let device = {deviceId: serial, serial, owner: this.clinetInfo.nickname, status, isShared: false}
+          arr.push(device)
 
-        if(device.serial === this.selectedDevice[0].serial){
-             this.$store.commit({type: 'selectDevice', device})
+          //当本地存储的已选的设备存在所有设备列表里，将此设备设为已选
+          if(this.selectedDevice.length > 0 && device.serial === this.selectedDevice[0].serial){
+              this.$store.commit({type: 'selectDevice', device})
+          }
         }
+        
       })
       return arr
     }
