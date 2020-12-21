@@ -86,8 +86,9 @@ function $pushToMobile(pkgPath, weappName, appName, serial){
     let pathInCar = (appName === 'debug')? 'sdcard/moss/weapp': `data/data/com.tencent.wecarmas/files/moss/${weappName}/pkg`
     //先判断设备上将要push的目录是否存在
     $isExistFileInDevice(pathInCar,serial).then(() => {
+      console.log(`adb -s ${serial} push ${pkgPath} ${pathInCar}`)
       let workerProcess = exec(`adb -s ${serial} push ${pkgPath} ${pathInCar}`, {cwd: './'})
-  
+      
       workerProcess.stdout.on('data', data =>{
           console.log('push stdout', data)
           if(data.indexOf('Permission denied') > -1){
@@ -120,14 +121,19 @@ function $startApp(packageName, serial){
     return new Promise((resolve, reject) => {
         exec(`adb -s ${serial} shell am start ${packageName}`, (error, stdout, stderr) => {
             if(error){
-                console.log('error', error)
+                console.log('111111error', JSON.stringify(error))
             }
-            console.log('stdout',stdout)
+            console.log('222222stdout',stdout)
             if(stdout.indexOf('no devices/emulators') > -1){
               reject('设备连接中断')
             }
-            console.log('stderr', stderr)
-            resolve()
+            if(stderr.toLowerCase().indexOf('permission denial') > -1){
+              console.log('33333Permission denied')
+              reject('Permission denied')
+            }else{
+              resolve()
+            }
+            
         })
         
     })
@@ -137,7 +143,7 @@ function $startApp(packageName, serial){
 function $closeApp(appName, serial){
   return new Promise((resolve, reject) => {
     console.log('关闭应用：'+ appName)
-    exec(`adb ${serial} shell am force-stop ${appName}`, (error, stdout, stderr) => {
+    exec(`adb -s ${serial} shell am force-stop ${appName}`, (error, stdout, stderr) => {
       if(error){
         console.log('error', error)
       }
@@ -232,20 +238,21 @@ function $formateDate(){
 //判断设备目录下是否存在某个文件
 function $isExistFileInDevice(filePath, serial){
   return new Promise((resolve, reject)=> {
+    console.log('_+_+_+开始判断设备上文件是否存在')
     exec(`adb -s ${serial} shell find ${filePath}`, (error, stdout, stderr) => {
       if(error){
-        console.log('stderr', error)
+        console.log('error', JSON.stringify(error), typeof JSON.stringify(error))
       }
       console.log('stdout', stdout)
       if(stdout.indexOf('no devices/emulators') > -1){
         reject('设备连接中断')
       }
-      if(stdout.indexOf('No such file or directory') > -1){
-        reject(`不存在此文件或文件夹：${filePath}`)
+      if(stdout.indexOf('No such file or directory') > -1 || stderr.indexOf('No such file or directory') > -1){
+        reject(`设备不存在此文件或文件夹：${filePath}`)
       }else{
+        console.log('---存在此文件', filePath)
         resolve()
       }
-      console.log('stderr', stderr)
     })
   })
   
@@ -327,7 +334,23 @@ function $getIPAddress(){
         }
     }
 }
-
+function $isSelectDevice(selectedDevice, localDeviceList){
+  return new Promise((resolve, reject) => {
+    console.log('判断是否选择设备', selectedDevice, localDeviceList)
+    if(selectedDevice.length > 0 && localDeviceList.findIndex(item => item.serial === selectedDevice[0].serial) > -1){
+      resolve()
+    }else{
+      reject('请先选择连接的设备！')
+    }
+  })
+}
+function $rootDevice(serial){
+  return new Promise(resolve => {
+    execSync(`adb -s ${serial} root`)
+    resolve()
+  })
+  
+}
 export {
   $compileFile, 
   $copyFile, 
@@ -346,5 +369,7 @@ export {
   $shareDevice,
   $shareDevice2,
   $disconnect,
-  $getIPAddress
+  $getIPAddress,
+  $isSelectDevice,
+  $rootDevice
 }

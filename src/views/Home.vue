@@ -64,7 +64,7 @@
 <script>
 
 const fs = window.require('fs')
-import {$compileFile, $copyFile, $pushToMobile, $isExistFileInDevice, $isAppRunning} from '../assets/js/tools'
+import {$compileFile, $copyFile, $pushToMobile, $isAppRunning, $isSelectDevice} from '../assets/js/tools'
 
 // import {$toast} from '../utils'
 import { mapState } from 'vuex'
@@ -104,7 +104,7 @@ export default {
     formTitle () {
       return this.editedIndex === -1 ? '添加' : '修改'
     },
-    ...mapState(['config','weappList', 'mirrorConfig', 'selectedDevice'])
+    ...mapState(['config','weappList', 'mirrorConfig', 'selectedDevice', 'localDeviceList'])
   },
   watch: {
       dialog (val) {
@@ -147,8 +147,12 @@ export default {
         let aimPath = `${weappSavePath}/${appName}.wxapkg`
 
         return $copyFile(resourcePath, aimPath)
-      }).then(() => {
-        
+      })
+      .then(() => {
+        return $isSelectDevice(this.selectedDevice, this.localDeviceList)
+      })
+      .then(() => {
+
         let pkgPath = `${weappSavePath}/${appName}.wxapkg`
         return $pushToMobile(pkgPath, weappName, appName, serial)
       })
@@ -261,9 +265,12 @@ export default {
           return 
         }
         let {name:weappName, appName} = this.selected[0];
-        let {serial} = this.selectedDevice[0]
-
-        $pushToMobile(pkgPath, weappName, appName, serial)
+        
+        $isSelectDevice(() => {
+          let {serial} = this.selectedDevice[0]
+          return  $pushToMobile(pkgPath, weappName, appName, serial)
+        })
+        
         .then(()=> {
           alert('push 成功')
         }).catch(err => {
@@ -279,11 +286,6 @@ export default {
     onDragover(e){
       e.preventDefault();
     },
-    showToast(){
-      let {serial} = this.selectedDevice[0]
-      $isExistFileInDevice('sdcard/moss/weapp2', serial)
-      //$toast({content: new Date().getTime(),duration: '3000', show: true });
-    }
   }
 }
 </script>

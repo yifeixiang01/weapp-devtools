@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <div class="device-wrap">
-            <v-data-table  :headers="headers1"  :items="localDeviceList" hide-default-footer :show-select="true" v-model="selectedDevice" :single-select="true" @item-selected="selectDevice" >
+            <v-data-table  :headers="headers1"  :items="localDeviceList" item-key="serial" hide-default-footer :show-select="true" v-model="selectedDeviceList" :single-select="true" @item-selected="selectDevice" >
                 <template v-slot:[`item.selected`]="{ item }">
                     <v-btn text color="primary" @click="shareDevice(item)" v-if="isSocketOpen && (item.serial.indexOf(':') == -1)">{{!item.isShared? '共享': ''}}</v-btn>
                     <v-btn text color="primary" @click="cancelShareDevice(item)" v-if="isSocketOpen && (item.serial.indexOf(':') == -1)">{{item.isShared? '取消共享': ''}}</v-btn>
@@ -40,13 +40,15 @@ export default {
                 {text: 'status', value: 'status'},
                 {text: 'operation', value: 'selected'}
             ],
-
-            isSocketOpen: false
+            showSelect: true,
+            isSocketOpen: false,
+            selectedDeviceList: []
         }
     },
     created(){
         console.log('--------clientInfo', this.clinetInfo)
         console.log('localDeviceList', this.localDeviceList)
+        this.selectedDeviceList = this.selectedDevice
     },
     mounted(){
         this.createClient();
@@ -57,10 +59,10 @@ export default {
     methods: {
         selectDevice(row){
             console.log(row)
-            let item = row.item
-
-            this.$store.commit({type: 'selectDevice', device: item})
-            console.log(this.selectedDevice)
+            // let item = row.item
+            this.selectedDeviceList = [row.item]
+            this.$store.commit({type: 'selectDevice', device: row.item})
+            // console.log(this.selectedDevice)
         },
         createClient(){
             if (typeof WebSocket === "undefined") {

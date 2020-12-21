@@ -8,6 +8,7 @@ Vue.use(Vuex)
 
 let config = electronStore.get('weappConfig') || {}
 let weappList = electronStore.get('weappList') || []
+let selectedDevice = electronStore.get('selectedDevice') || []
 export default new Vuex.Store({
   state: {
     clinetInfo: {
@@ -30,7 +31,7 @@ export default new Vuex.Store({
       disableScreensaver: false,           //关闭屏幕保护
       record: false,                       //投屏的时候进行录屏
     },
-    selectedDevice: [],             //选中的设备
+    selectedDevice: selectedDevice,             //选中的设备
     selectedWeapp: [],              //选中的小程序          
   },
   mutations: {
@@ -68,9 +69,15 @@ export default new Vuex.Store({
 
       state.mirrorConfig = payload.mirrorConfig
     },
+    //选择设备
     selectDevice(state, payLoad){
       console.log(payLoad)
       state.selectedDevice = [payLoad.device]
+      electronStore.set('selectedDevice', state.selectedDevice)
+    },
+    //移除选中的设备
+    removeSelectedDevice(state){
+      state.selectedDevice = []
     }
   },
   actions: {
