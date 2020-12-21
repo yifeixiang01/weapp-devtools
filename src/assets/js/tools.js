@@ -316,8 +316,12 @@ function $shareDevice2(serial){
     
   })
 }
+function $connectDevice(serial){
+  console.log(serial)
+  execSync(`adb connect ${serial}`)
+}
 //断开设备
-function $disconnect(serial){
+function $disconnectDevice(serial){
   execSync(`adb disconnect ${serial}`)
 }
 
@@ -368,7 +372,8 @@ export {
   $showLaunch,
   $shareDevice,
   $shareDevice2,
-  $disconnect,
+  $connectDevice,
+  $disconnectDevice,
   $getIPAddress,
   $isSelectDevice,
   $rootDevice

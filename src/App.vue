@@ -77,12 +77,12 @@ export default {
       let arr = []
       deviceList.forEach(item => {
         let {id: serial, type:status} = item
-        let device = {owner: this.clinetInfo.nickname, serial, status, isShared: false}
+        let device = {deviceId: serial, serial, owner: this.clinetInfo.nickname, status, isShared: false}
         arr.push(device)
 
         if(device.serial === this.selectedDevice[0].serial){
              this.$store.commit({type: 'selectDevice', device})
-          }
+        }
       })
       return arr
     }

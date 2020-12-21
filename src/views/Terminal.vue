@@ -14,12 +14,13 @@
                 <v-col class="text-center"><v-btn @click="createClient">连接服务器</v-btn></v-col>
             </v-row>
             <div v-else>
-                <v-row v-for="device in remoteDeviceList" :key="device.serial">
-                    <v-col sm="2">{{device.hostIP}}</v-col>
-                    <v-col sm="2">{{device.owner}}</v-col>
-                    <v-col sm="3">{{device.serial}}</v-col>
-                    <v-col sm="2">{{device.status}}</v-col>
-                </v-row>
+                <v-data-table  :headers="headers2"  :items="remoteDeviceList" item-key="serial" hide-default-footer >
+                    <template v-slot:[`item.isConnected`]="{ item }">
+                        <v-chip class="ma-2" v-if="item.isConnected">{{item.user}}</v-chip>
+                        <v-btn color="primary" small @click="connectRemoteDevice(item)" v-if="!item.isConnected">连接</v-btn>
+                    </template>
+                </v-data-table>
+
             </div>
             
         </div>
@@ -29,16 +30,25 @@
 </template>
 <script>
 import { mapState } from 'vuex'
-import { $shareDevice, $disconnect} from '../assets/js/tools'
+import { $shareDevice, $disconnectDevice, $connectDevice} from '../assets/js/tools'
 
 export default {
     data(){
         return {
             headers1: [
+                {text: 'deviceId', value: 'deviceId'},
                 {text: 'owner', value: 'owner'},
                 {text: 'serial', value: 'serial'},
                 {text: 'status', value: 'status'},
                 {text: 'operation', value: 'selected'}
+            ],
+            headers2: [
+                {text: 'deviceId', value: 'deviceId'},
+                {text: 'owner', value: 'owner'},
+                {text: 'serial', value: 'serial'},
+                {text: 'status', value: 'status'},
+                {text: 'canUse', value: 'isConnected'},
+                {text: 'user', value: 'user'}
             ],
             showSelect: true,
             isSocketOpen: false,
@@ -66,10 +76,10 @@ export default {
         },
         createClient(){
             if (typeof WebSocket === "undefined") {
-                alert("您的浏览器不支持socket");
+                alert("您的浏览器不支持socket"); 
             } else {
                 // 实例化socket
-                this.socket = new WebSocket("ws://192.168.0.109:8181/websocket1");
+                this.socket = new WebSocket("ws://10.1.42.27:8181/websocket1");
 
                 this.socket.onopen = () => {
                     console.log('socket is open')
@@ -155,8 +165,19 @@ export default {
         //断开连接
         disconnectDevice(item){
             let serial = item.serial
-            $disconnect(serial)
-        }
+            $disconnectDevice(serial)
+        },
+        //连接远程设备
+        connectRemoteDevice(item){
+            console.log('连接远程设备', item)
+            let {serial, owner} = item
+            // let {nickname} = this.clinetInfo
+            console.log(serial, owner)
+            $connectDevice(serial)
+            
+            // let message = {type: 'connectDevice', user: nickname, owner, serial}
+            // this.socket.send(JSON.stringify(message))
+        },
     }
 }
 </script>
