@@ -12,6 +12,7 @@
             <v-col sm="3"><v-btn @click="closeActiveCenter">关闭活动中心</v-btn></v-col>
             <v-col sm="3"><v-btn @click="getAppPkgName">查看应用名和包名</v-btn></v-col>
             <v-col sm="3"><v-btn @click="showAllApp">显示所有应用</v-btn></v-col>
+            <v-col sm="3"><v-btn @click="rootDevice">root</v-btn></v-col>
             
             <!-- <v-col sm="3"><v-btn @click="startCMD">打开cmd</v-btn></v-col> -->
             <!-- <v-col sm="3"><v-btn @click="getDevices">查看连接的设备</v-btn></v-col> -->
@@ -23,7 +24,8 @@
 // import adbkit from '../assets/js/adb'
 const  ElectronStore = window.require('electron-store')
 const electronStore = new ElectronStore();
-import {$startApp, $screenCap, $clearAppStorage, $getAppName, $closeApp, $startCMD, $getDevices, $showLaunch} from '../assets/js/tools'
+import {$startApp, $screenCap, $clearAppStorage, $getAppName, $closeApp, $startCMD, $getDevices, $showLaunch, $isSelectDevice, $rootDevice} from '../assets/js/tools'
+import { mapState } from 'vuex'
 
 export default {
     data: () => ({
@@ -33,60 +35,77 @@ export default {
     }),
     created(){
         // adbkit.onDevices()
+        console.log(this.selectedDevice)
+    },
+    computed: {
+        ...mapState(['selectedDevice', 'localDeviceList'])
     },
     methods: {
         startWecarmas(){
-            $getDevices().then(() => {
-                $startApp('com.tencent.wecarmas/com.tencent.wecarmas.ui.activity.HomeActivity')
+            $isSelectDevice(this.selectedDevice, this.localDeviceList)
+            .then(() => {
+                let {serial} = this.selectedDevice[0]
+                return $startApp('com.tencent.wecarmas/com.tencent.wecarmas.ui.activity.HomeActivity', serial)
             }).catch(err => {
                 alert(err)
             })
             
         },
         closeWecarmas(){
-            $getDevices().then(() => {
-                $closeApp('com.tencent.wecarmas')
+            $isSelectDevice(this.selectedDevice, this.localDeviceList)
+            .then(() => {
+                let {serial} = this.selectedDevice[0]
+                return $closeApp('com.tencent.wecarmas',serial)
             }).catch(err => {
                 alert(err)
             })
             
         },
         openWechat(){
-            $getDevices().then(() => {
-                $startApp('com.tencent.mm/com.tencent.mm.ui.LauncherUI')
+            $isSelectDevice(this.selectedDevice, this.localDeviceList)
+            .then(() => {
+                let {serial} = this.selectedDevice[0]
+                return $startApp('com.tencent.mm/com.tencent.mm.ui.LauncherUI', serial)
             }).catch(err => {
                 alert(err)
             })
             
         },
         screenCap(){
-            $getDevices().then(() => {
+             $isSelectDevice(this.selectedDevice, this.localDeviceList)
+             .then(() => {
                 let {weappSavePath} = electronStore.get('weappConfig')
-                $screenCap(weappSavePath)
+                let {serial} = this.selectedDevice[0]
+                $screenCap(weappSavePath,serial)
             }).catch(err => {
                 alert(err)
             })
             
         },
         openSetting(){
-            $getDevices().then(() => {
-                $startApp('com.android.settings/.Settings')
+            $isSelectDevice(this.selectedDevice, this.localDeviceList).then(() => {
+                let {serial} = this.selectedDevice[0]
+                return $startApp('com.android.settings/.Settings',serial)
             }).catch(err => {
                 alert(err)
             })
             
         },
         clearWecarmasStorage(){
-            $getDevices().then(() => {
-                $clearAppStorage('com.tencent.wecarmas')
+            $isSelectDevice(this.selectedDevice, this.localDeviceList)
+            .then(() => {
+                let {serial} = this.selectedDevice[0]
+                return $clearAppStorage('com.tencent.wecarmas', serial)
             }).catch(err => {
                 alert(err)
             })
             
         },
         getAppPkgName(){
-            $getDevices().then(() => {
-                $getAppName()
+            $isSelectDevice(this.selectedDevice, this.localDeviceList)
+            .then(() => {
+                let {serial} = this.selectedDevice[0]
+                return $getAppName(serial)
             }).catch(err => {
                 alert(err)
             })
@@ -100,21 +119,40 @@ export default {
             $getDevices().catch(err => {alert(err)})
         },
         openActiveCenter(){
-            $getDevices().then(() => {
-                $startApp('com.android.launcherWT/com.android.launcherWT.Launcher')
+            $isSelectDevice(this.selectedDevice, this.localDeviceList)
+            .then(() => {
+                let {serial} = this.selectedDevice[0]
+                return $startApp('com.android.launcherWT/com.android.launcherWT.Launcher', serial)
             }).catch(err => {
                 alert(err)
             })
         },
         closeActiveCenter(){
-            $getDevices().then(() => {
-                $closeApp('com.android.launcherWT')
+            $isSelectDevice(this.selectedDevice, this.localDeviceList)
+            .then(() => {
+                let {serial} = this.selectedDevice[0]
+                return $closeApp('com.android.launcherWT',serial)
             }).catch(err => {
                 alert(err)
             })
         },
         showAllApp(){
-            $showLaunch
+            $isSelectDevice(this.selectedDevice, this.localDeviceList)
+            .then(() => {
+                let {serial} = this.selectedDevice[0]
+                return $showLaunch(serial)
+            })
+            
+        },
+        rootDevice(){
+            $isSelectDevice(this.selectedDevice, this.localDeviceList)
+            .then(() => {
+                let {serial} = this.selectedDevice[0]
+                return $rootDevice(serial)
+            })
+            .then(() => {
+                alert('授权成功！')
+            })
         }
     }
     

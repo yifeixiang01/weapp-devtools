@@ -47,8 +47,7 @@
 </template>
 
 <script>
-const Scrcpy = require('../assets/js/scrcpy')
-const scrcpyTool = new Scrcpy();
+const scrcpy = require('../assets/js/scrcpy')
 import { mapState } from 'vuex'
 
 export default {
@@ -62,13 +61,14 @@ export default {
     
   },
   computed: {
-    ...mapState(['mirrorConfig', 'config'])
+    ...mapState(['mirrorConfig', 'config', 'selectedDevice'])
   },
   methods: {
     start(){
       let {weappSavePath} = this.config
       console.log('保存目录', weappSavePath)
-      scrcpyTool.start(this.mirrorConfig, weappSavePath) 
+      let {serial} = this.selectedDevice[0]
+      scrcpy.start(this.mirrorConfig, serial, weappSavePath) 
     },
     submit(){
       this.$store.commit({type: 'setMirrorConfig', mirrorConfig: this.mirrorConfig})

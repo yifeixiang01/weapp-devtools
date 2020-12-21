@@ -45,7 +45,7 @@ export default {
     this.onDevices();
   },
   computed:{
-    ...mapState(['clinetInfo'])
+    ...mapState(['clinetInfo', 'selectedDevice'])
   },
   methods: {
     //监听本地连接的设备变化
@@ -54,12 +54,17 @@ export default {
         onadd: ({device, list}) => {
           console.log('有新设备连接', device)
           list = this.formateList(list)
+          
           // console.log(list)
           this.$store.commit({type: 'changeLocalList', list})
         },
         onremove: ({device, list}) => {
           console.log('设备断开', device)
           list = this.formateList(list)
+
+          if(device.serial === this.selectedDevice[0].serial){
+            this.$store.commit({type: 'removeSelectedDevice'})
+          }
           // console.log(list)
           this.$store.commit({type: 'changeLocalList', list})
         },
@@ -72,7 +77,12 @@ export default {
       let arr = []
       deviceList.forEach(item => {
         let {id: serial, type:status} = item
-        arr.push({owner: this.clinetInfo.nickname, serial, status, isShared: false})
+        let device = {deviceId: serial, serial, owner: this.clinetInfo.nickname, status, isShared: false}
+        arr.push(device)
+
+        if(device.serial === this.selectedDevice[0].serial){
+             this.$store.commit({type: 'selectDevice', device})
+        }
       })
       return arr
     }
