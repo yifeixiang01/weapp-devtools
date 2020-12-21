@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <div class="device-wrap">
-            <v-data-table  :headers="headers1"  :items="localDeviceList" hide-default-footer :show-select="true" v-model="selectedDevice" :single-select="true" @item-selected="selectDevice" >
+            <v-data-table  :headers="headers1"  :items="localDeviceList" hide-default-footer :show-select="true" v-model="selectedDevice" :single-select="true" @item-selected="selectDevice1" >
                 <template v-slot:[`item.selected`]="{ item }">
                     <v-btn text color="primary" @click="shareDevice(item)" v-if="isSocketOpen && (item.serial.indexOf(':') == -1)">{{!item.isShared? '共享': ''}}</v-btn>
                     <v-btn text color="primary" @click="cancelShareDevice(item)" v-if="isSocketOpen && (item.serial.indexOf(':') == -1)">{{item.isShared? '取消共享': ''}}</v-btn>
@@ -47,6 +47,7 @@ export default {
     created(){
         console.log('--------clientInfo', this.clinetInfo)
         console.log('localDeviceList', this.localDeviceList)
+        console.log('+++selectedDevice', this.selectedDevice)
     },
     mounted(){
         this.createClient();
@@ -55,10 +56,9 @@ export default {
         ...mapState(['localDeviceList', 'remoteDeviceList', 'clinetInfo', 'selectedDevice'])
     },
     methods: {
-        selectDevice(row){
-            console.log(row)
+        selectDevice1(row){
             let item = row.item
-
+            console.log(item)
             this.$store.commit({type: 'selectDevice', device: item})
             console.log(this.selectedDevice)
         },
