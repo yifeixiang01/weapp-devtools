@@ -150,8 +150,10 @@ export default {
                 let {serial} = this.selectedDevice[0]
                 return $rootDevice(serial)
             })
-            .then(() => {
-                alert('授权成功！')
+            .then((res) => {
+                alert(res)
+            }).catch(err => {
+                alert(err)
             })
         }
     }

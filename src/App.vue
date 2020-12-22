@@ -51,17 +51,14 @@ export default {
     //监听本地连接的设备变化
     onDevices(){
       adb.onDevices({
-        onadd: ({device, list}) => {
+        onadd: ({device}) => {
           console.log('有新设备连接', device)
-          console.log(list)
           this.addLocalDevice(device)
-          // this.$store.commit({type: 'changeLocalList', list})
         },
-        onremove: ({device, list}) => {
+        onremove: ({device}) => {
           console.log('设备断开', device)
           let {id: deviceId} = device
           this.removeLocalDevice(deviceId)
-          console.log(list)
           //当断开的设备是已选的设备，将选择数组置空
           if(this.selectedDevice.length > 0 && deviceId === this.selectedDevice[0].serial){
             this.$store.commit({type: 'removeSelectedDevice'})

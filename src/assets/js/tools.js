@@ -1,6 +1,4 @@
 
-
-
 const { exec, execSync, spawn} = window.require('child_process')
 const fs = window.require('fs')
 const os = window.require('os')
@@ -317,10 +315,17 @@ function $isSelectDevice(selectedDevice, localDeviceList){
   })
 }
 function $rootDevice(serial){
-  return new Promise(() => {
+  return new Promise((resolve, reject) => {
     exec(`adb -s ${serial} root`, (error, stdout, stderr) => {
       console.log(error)
       console.log(stdout)
+      if(stdout.indexOf('running as root') > -1){
+        reject('该设备已经root')
+      }else if(stdout.indexOf('cannot run as root') > -1){
+        reject('root失败！') 
+      }else{
+        resolve('root成功！')
+      }
       console.log(stderr)
     })
     
