@@ -122,7 +122,7 @@ export default {
             $isSelectDevice(this.selectedDevice, this.localDeviceList)
             .then(() => {
                 let {serial} = this.selectedDevice[0]
-                return $startApp('com.android.launcherWT/com.android.launcherWT.Launcher', serial)
+                return $startApp('com.tencent.wcenter/com.tencent.wcenter.MainActivity', serial)
             }).catch(err => {
                 alert(err)
             })
@@ -131,7 +131,7 @@ export default {
             $isSelectDevice(this.selectedDevice, this.localDeviceList)
             .then(() => {
                 let {serial} = this.selectedDevice[0]
-                return $closeApp('com.android.launcherWT',serial)
+                return $closeApp('com.tencent.wcenter',serial)
             }).catch(err => {
                 alert(err)
             })

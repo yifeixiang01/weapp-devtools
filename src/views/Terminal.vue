@@ -162,6 +162,7 @@ export default {
                     }
                 })
                 this.$store.commit({type: 'changeLocalDeviceState', deviceId, key: 'isShared', value: false})
+
             }
         },
         shareDeviceSuccess(deviceId){
@@ -187,7 +188,8 @@ export default {
         //某个客户端断开连接，将本地连接此客户端下的所有设备删除
         removeClientDevice(nickname){
             this.$store.commit({type: 'removeClientDevice', nickname})
-        }
+        },
+        
     }
 }
 </script>
