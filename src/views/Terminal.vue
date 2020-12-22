@@ -16,22 +16,22 @@
             <div v-else>
                 <v-data-table  :headers="headers2"  :items="remoteDeviceList" item-key="serial" hide-default-footer >
                     <template v-slot:[`item.isConnected`]="{ item }">
-                        <v-chip class="ma-2" v-if="item.isConnected">{{item.user}}</v-chip>
-                        <v-btn color="primary" small @click="connectRemoteDevice(item)" v-if="!item.isConnected">连接</v-btn>
+                        <span v-if="item.isConnected">{{item.user}}</span>
+                        <v-btn color="primary" small @click="connectRemoteDevice(item)" :disabled="item.isLocalDevice" v-if="!item.isConnected">连接</v-btn>
                     </template>
                 </v-data-table>
 
             </div>
             
         </div>
-        
+        <v-btn @click="closeClient">关闭客户端</v-btn>
         
     </div>
 </template>
 <script>
 import { mapState } from 'vuex'
-import { $shareDevice, $disconnectDevice, $connectDevice} from '../assets/js/tools'
-
+import {  $disconnectDevice, $connectDevice} from '../assets/js/tools'
+import adb from '../assets/js/adb'
 export default {
     data(){
         return {
@@ -47,8 +47,7 @@ export default {
                 {text: 'owner', value: 'owner'},
                 {text: 'serial', value: 'serial'},
                 {text: 'status', value: 'status'},
-                {text: 'canUse', value: 'isConnected'},
-                {text: 'user', value: 'user'}
+                {text: 'user', value: 'isConnected'}
             ],
             showSelect: true,
             isSocketOpen: false,
@@ -74,6 +73,7 @@ export default {
             this.$store.commit({type: 'selectDevice', device: row.item})
             // console.log(this.selectedDevice)
         },
+        //创建客户端
         createClient(){
             if (typeof WebSocket === "undefined") {
                 alert("您的浏览器不支持socket"); 
@@ -93,7 +93,8 @@ export default {
                     switch(data.type){
                         case 'updateClientMsg': this.changeClientMsg(data.id); break;
                         case 'deviceList': this.$store.commit({type: 'changeRemoteList', list: data.list}); break;
-                        case 'shareDeviceSuccess': this.shareDeviceSuccess(data.serial); break;
+                        case 'shareDeviceSuccess': this.shareDeviceSuccess(data.deviceId); break;
+                        case 'clientDisconnected': this.removeClientDevice(data.nickname); break;
                         default: 
                             console.log('没有匹配到要执行的命令');
                     }
@@ -109,6 +110,7 @@ export default {
                 }
             }
         },
+        //修改客户端信息
         changeClientMsg(id){
             console.log('修改客户端信息')
             this.$store.commit({type: 'changeBaseInfo', id});
@@ -132,7 +134,7 @@ export default {
             let {id, hostIP, nickname} = this.clinetInfo
             console.log(item)
             if(!item.isShared){
-                $shareDevice(serial, hostIP, port => {
+                adb.shareDevice(serial, hostIP, port => {
                     console.log('_+_+_+_+_+_+',port)
                     
                     let {deviceId, status} = item
@@ -159,18 +161,13 @@ export default {
                         item.isShared = false
                     }
                 })
-                this.$store.commit({type: 'changeLocalList', list})
+                this.$store.commit({type: 'changeLocalDeviceState', deviceId, key: 'isShared', value: false})
             }
         },
-        shareDeviceSuccess(serial){
-            console.log('共享成功', serial)
-            let list = JSON.parse(JSON.stringify(this.localDeviceList))
-            list.forEach(item => {
-                if(item.serial === serial){
-                    item.isShared = true
-                }
-            })
-            this.$store.commit({type: 'changeLocalList', list})
+        shareDeviceSuccess(deviceId){
+            console.log('共享成功', deviceId)
+
+            this.$store.commit({type: 'changeLocalDeviceState', deviceId, key: 'isShared', value: true})
         },
         //断开连接
         disconnectDevice(item){
@@ -180,14 +177,17 @@ export default {
         //连接远程设备
         connectRemoteDevice(item){
             console.log('连接远程设备', item)
-            let {serial, owner} = item
-            // let {nickname} = this.clinetInfo
-            console.log(serial, owner)
+            let {deviceId, serial, owner} = item
+            let {nickname} = this.clinetInfo
             $connectDevice(serial)
             
-            // let message = {type: 'connectDevice', user: nickname, owner, serial}
-            // this.socket.send(JSON.stringify(message))
+            let message = {type: 'connectDevice', user: nickname, owner, deviceId}
+            this.socket.send(JSON.stringify(message))
         },
+        //某个客户端断开连接，将本地连接此客户端下的所有设备删除
+        removeClientDevice(nickname){
+            this.$store.commit({type: 'removeClientDevice', nickname})
+        }
     }
 }
 </script>

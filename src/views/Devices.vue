@@ -21,7 +21,7 @@
 </template>
 
 <script>
-// import adbkit from '../assets/js/adb'
+
 const  ElectronStore = window.require('electron-store')
 const electronStore = new ElectronStore();
 import {$startApp, $screenCap, $clearAppStorage, $getAppName, $closeApp, $startCMD, $getDevices, $showLaunch, $isSelectDevice, $rootDevice} from '../assets/js/tools'

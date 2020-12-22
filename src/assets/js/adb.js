@@ -106,7 +106,24 @@ const usbDeviceToTcp = function (serial, port) {
 
 }
 
+//端口映射
+function shareDevice(serial, hostIP, callback){
+	usbDeviceToTcp(serial, port).then(() => {
+      console.log(hostIP)
+      // execSync(`adb start-server ${hostIP}:${serial}`)
+      console.log('success++++++++', port)
+      callback && callback(port)
+      
+
+    }).catch((err)=> {
+      if(err.indexOf('EADDRINUSE') > -1){
+        console.log(`端口${port}被占用，将使用端口${port + 1}`)
+        port++
+        return shareDevice(serial, port, callback)
+      }
+    })
+}
 
 export default {
-	connect, onDevices, tcpip, usbDeviceToTcp
+	connect, onDevices, tcpip, usbDeviceToTcp, shareDevice
 }

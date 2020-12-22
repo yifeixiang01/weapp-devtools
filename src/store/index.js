@@ -36,18 +36,44 @@ export default new Vuex.Store({
   },
   mutations: {
     //获取服务器分配的id
-    changeBaseInfo(state, payload){
-      state.clinetInfo.id = payload.id;
+    changeBaseInfo(state, payLoad){
+      state.clinetInfo.id = payLoad.id;
     },
-    //修改本地列表
-    changeLocalList(state, payLoad){
-
-      state.localDeviceList = payLoad.list
+    //本地添加连接的设备
+    addLocalDevice(state, payLoad){
+      state.localDeviceList.push(payLoad.device)
+    },
+    //本地删除连接的设备
+    removeLocalDevice(state, payLoad){
+      state.localDeviceList = state.localDeviceList.filter(item => item.deviceId != payLoad.deviceId)
+    },
+    //修改本地设备的状态
+    changeLocalDeviceState(state, payLoad){
+      let {deviceId, key, value} = payLoad
+      state.localDeviceList.forEach(item => {
+        if(item.deviceId === deviceId){
+          item[key] = value
+        }
+      })
     },
     //修改远程列表
     changeRemoteList(state, payLoad){
+      let list = payLoad.list
+      list.forEach(remoteDevice => {
+        state.localDeviceList.forEach(localDevice => {
+          if(remoteDevice.deviceId === localDevice.deviceId){
+            remoteDevice.isLocalDevice = true
+          }
+        })
+        
+      })
+      state.remoteDeviceList = list
 
-      state.remoteDeviceList = payLoad.list
+    },
+    //移除某个客户端下的所有设备
+    removeClientDevice(state, payLoad){
+      let {nickname} = payLoad
+      state.localDeviceList = state.localDeviceList.filter(device => device.owner !== nickname)
     },
     //设置小程序列表
     setWeappList(state, payLoad){
@@ -65,9 +91,8 @@ export default new Vuex.Store({
       electronStore.set('weappConfig', {wechatDevtoolsPath, weappCompilePath, weappSavePath, nickname})
     },
     //设置镜像配置信息
-    setMirrorConfig(state, payload){
-
-      state.mirrorConfig = payload.mirrorConfig
+    setMirrorConfig(state, payLoad){
+      state.mirrorConfig = payLoad.mirrorConfig
     },
     //选择设备
     selectDevice(state, payLoad){

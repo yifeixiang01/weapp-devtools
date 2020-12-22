@@ -1,6 +1,6 @@
 
 
-import adb from './adb'
+
 const { exec, execSync, spawn} = window.require('child_process')
 const fs = window.require('fs')
 const os = window.require('os')
@@ -283,39 +283,7 @@ function $showLaunch(serial){
   execSync(`adb -s ${serial} shell am force-stop com.android.launcherWT`)
 }
 
-let port = 5700
-//端口映射
-function $shareDevice(serial, hostIP, callback){
-    adb.usbDeviceToTcp(serial, port).then(() => {
-      console.log(hostIP)
-      // execSync(`adb start-server ${hostIP}:${serial}`)
-      console.log('success++++++++', port)
-      callback && callback(port)
-      
 
-    }).catch((err)=> {
-      if(err.indexOf('EADDRINUSE') > -1){
-        console.log(`端口${port}被占用，将使用端口${port + 1}`)
-        port++
-        return $shareDevice(serial, port, callback)
-      }
-    })
-}
-function $shareDevice2(serial){
-  return new Promise(() => {
-    var result = spawn('adbkit', ['--htlp', 'usb-device-to-tcp', `-p ${serial}`]);
-    result.on('close', function(code) {
-        console.log('child process exited with code :' + code);
-    });
-    result.stdout.on('data', function(data) {
-        console.log('stdout: ' + data);
-    });
-    result.stderr.on('data', function(data) {
-        console.log('stderr: ' + data);
-    });
-    
-  })
-}
 function $connectDevice(serial){
   console.log(serial)
   execSync(`adb connect ${serial}`)
@@ -349,9 +317,13 @@ function $isSelectDevice(selectedDevice, localDeviceList){
   })
 }
 function $rootDevice(serial){
-  return new Promise(resolve => {
-    execSync(`adb -s ${serial} root`)
-    resolve()
+  return new Promise(() => {
+    exec(`adb -s ${serial} root`, (error, stdout, stderr) => {
+      console.log(error)
+      console.log(stdout)
+      console.log(stderr)
+    })
+    
   })
   
 }
@@ -370,8 +342,7 @@ export {
   $isExistFileInDevice,
   $isAppRunning,
   $showLaunch,
-  $shareDevice,
-  $shareDevice2,
+  // $shareDevice,
   $connectDevice,
   $disconnectDevice,
   $getIPAddress,

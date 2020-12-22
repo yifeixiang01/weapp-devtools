@@ -15,16 +15,13 @@
   },
   "dependencies": {
     "adbkit": "^2.11.1",
-    "bluebird": "^3.7.2",
     "core-js": "^3.6.5",
     "electron-store": "^6.0.1",
     "fix-path": "^3.0.0",
-    "nodejs-websocket": "^1.7.2",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
     "vuetify": "^2.2.11",
-    "vuex": "^3.4.0",
-    "xterm": "^4.9.0"
+    "vuex": "^3.4.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",

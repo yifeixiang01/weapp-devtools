@@ -53,44 +53,39 @@ export default {
       adb.onDevices({
         onadd: ({device, list}) => {
           console.log('有新设备连接', device)
-          list = this.formateList(list)
           console.log(list)
-          // console.log(list)
-          this.$store.commit({type: 'changeLocalList', list})
+          this.addLocalDevice(device)
+          // this.$store.commit({type: 'changeLocalList', list})
         },
         onremove: ({device, list}) => {
           console.log('设备断开', device)
-          list = this.formateList(list)
-
+          let {id: deviceId} = device
+          this.removeLocalDevice(deviceId)
+          console.log(list)
           //当断开的设备是已选的设备，将选择数组置空
-          if(this.selectedDevice.length > 0 && device.serial === this.selectedDevice[0].serial){
+          if(this.selectedDevice.length > 0 && deviceId === this.selectedDevice[0].serial){
             this.$store.commit({type: 'removeSelectedDevice'})
           }
-          // console.log(list)
-          this.$store.commit({type: 'changeLocalList', list})
         },
         onend: () => {
           console.log('监听设备失败')
         }
       })
     },
-    formateList(deviceList){
+    //添加本地设备
+    addLocalDevice(device){
+      let {id: serial, type:status} = device;
       let {hostIP} = this.clinetInfo
-      let arr = []
-      deviceList.forEach(item => {
-        let {id: serial, type:status} = item
-        if(serial.indexOf(hostIP) == -1){   //设备serial中包含本地hostIP，则是连接的本地共享的设备，不显示
+      
+      //设备serial中包含本地hostIP，则是连接的本地共享的设备，不显示
+      if(serial.indexOf(hostIP) == -1){   
           let device = {deviceId: serial, serial, owner: this.clinetInfo.nickname, status, isShared: false}
-          arr.push(device)
-
-          //当本地存储的已选的设备存在所有设备列表里，将此设备设为已选
-          if(this.selectedDevice.length > 0 && device.serial === this.selectedDevice[0].serial){
-              this.$store.commit({type: 'selectDevice', device})
-          }
-        }
-        
-      })
-      return arr
+          this.$store.commit({type:'addLocalDevice', device})
+      }
+    },
+    //移除本地断开的设备
+    removeLocalDevice(deviceId){
+      this.$store.commit({type: 'removeLocalDevice', deviceId: deviceId})
     }
   }
 }
