@@ -66,7 +66,7 @@ export default {
     this.onDevices();
   },
   computed:{
-    ...mapState(['clinetInfo', 'selectedDevice'])
+    ...mapState(['clinetInfo', 'selectedDevice', 'localDeviceList'])
   },
   methods: {
     //监听本地连接的设备变化
@@ -81,7 +81,7 @@ export default {
           let {id: deviceId} = device
           this.removeLocalDevice(deviceId)
           //当断开的设备是已选的设备，将选择数组置空
-          if(this.selectedDevice.length > 0 && deviceId === this.selectedDevice[0].serial){
+          if(this.selectedDevice.length > 0 && deviceId === this.selectedDevice[0].deviceId){
             this.$store.commit({type: 'removeSelectedDevice'})
           }
         },
@@ -96,7 +96,10 @@ export default {
       let {hostIP} = this.clinetInfo
       
       //设备serial中包含本地hostIP，则是连接的本地共享的设备，不显示
-      if(serial.indexOf(hostIP) == -1){   
+      //本地列表中已经有相同的设备，则不添加到本地列表里
+      let index = this.localDeviceList.findIndex(item => item.deviceId === serial)
+      
+      if(serial.indexOf(hostIP) == -1 && index === -1){   
           let device = {deviceId: serial, serial, owner: this.clinetInfo.nickname, status, isShared: false}
           this.$store.commit({type:'addLocalDevice', device})
       }
