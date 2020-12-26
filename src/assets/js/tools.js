@@ -13,6 +13,9 @@ function $compileFile(weappName, projectPath, weappCompilePath, wechatDevtoolsPa
             console.log('+++error', error)
         }
         console.log('+++stdout',stdout)
+        if(stdout.indexOf(19) > -1){
+          reject('项目路径错误')
+        }
         console.log('+++stderr', stderr)
       })
 
@@ -21,9 +24,9 @@ function $compileFile(weappName, projectPath, weappCompilePath, wechatDevtoolsPa
       })
       workerProcess.stderr.on('data', data =>{
           console.log('stderr', data)
-          if(data.indexOf('×') > -1){
-            reject('请先在微信开发工具上打开服务端口')
-          }
+          // if(data.indexOf('×') > -1){
+          //   reject('请先在微信开发工具上打开服务端口')
+          // }
       })
       workerProcess.on('close', code => {
         
