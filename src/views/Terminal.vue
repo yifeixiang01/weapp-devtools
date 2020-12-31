@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="container" style="position: relative;">
         <div class="device-wrap">
             <v-data-table  :headers="headers1"  :items="localDeviceList" item-key="serial" hide-default-footer :show-select="true" v-model="selectedDeviceList" :single-select="true" @item-selected="selectDevice" >
                 <template v-slot:[`item.selected`]="{ item }">
@@ -26,11 +26,13 @@
         </div>
         <v-btn @click="closeClient">关闭客户端</v-btn>
         
+        <!-- button: 添加小程序 -->
+        <v-btn class="mx-2 refresh" x-small  fab  dark  color="indigo" @click="getDevices" ><v-icon dark> mdi-cached</v-icon></v-btn>
     </div>
 </template>
 <script>
 import { mapState } from 'vuex'
-import {  $disconnectDevice, $connectDevice} from '../assets/js/tools'
+import {  $disconnectDevice, $connectDevice, $getDevices} from '../assets/js/tools'
 import adb from '../assets/js/adb'
 export default {
     data(){
@@ -106,7 +108,7 @@ export default {
                 }
                 this.socket.onerror = () =>{
                     console.log('连接服务器失败！')
-                    alert('连接服务器失败！')
+                    //alert('连接服务器失败！')
                 }
             }
         },
@@ -189,7 +191,12 @@ export default {
         removeClientDevice(nickname){
             this.$store.commit({type: 'removeClientDevice', nickname})
         },
-        
+        getDevices(){
+            $getDevices().then(res => {
+                console.log('获取到设备列表', JSON.stringify(res))
+
+            })
+        }
     }
 }
 </script>
@@ -206,8 +213,14 @@ export default {
 
         height: 60%;
     }
-    #terminal{
-        width: 100%;
-        height: 500px;
+    .add-btn{
+        position:fixed;
+        right: 20px;
+        top: 20px;
+    }
+    .refresh{
+        position:absolute;
+        right: 20px;
+        top: 20px;
     }
 </style>

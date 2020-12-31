@@ -8,6 +8,7 @@ Vue.use(Vuex)
 
 let config = electronStore.get('weappConfig') || {}
 let weappList = electronStore.get('weappList') || []
+let selectedWeapp = weappList.filter(item => item.selected);
 let selectedDevice = electronStore.get('selectedDevice') || []
 export default new Vuex.Store({
   state: {
@@ -32,7 +33,7 @@ export default new Vuex.Store({
       record: false,                       //投屏的时候进行录屏
     },
     selectedDevice: selectedDevice,             //选中的设备
-    selectedWeapp: [],              //选中的小程序          
+    selectedWeapp: selectedWeapp,              //选中的小程序          
   },
   mutations: {
     //获取服务器分配的id
@@ -42,6 +43,9 @@ export default new Vuex.Store({
     //本地添加连接的设备
     addLocalDevice(state, payLoad){
       state.localDeviceList.push(payLoad.device)
+      if(state.localDeviceList.length == 1){
+        state.selectedDevice = [payLoad.device]
+      }
     },
     //本地删除连接的设备
     removeLocalDevice(state, payLoad){
@@ -82,6 +86,7 @@ export default new Vuex.Store({
       state.selectedWeapp = weappList.filter(item => item.selected)
       
       electronStore.set('weappList', payLoad.weappList)
+      console.log(state.selectedWeapp)
     },
     //设置配置列表
     setConfig(state, payLoad){

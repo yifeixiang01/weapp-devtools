@@ -1,22 +1,20 @@
 <template>
   <div>
     <v-row @drop="onDrop($event)" @dragover="onDragover($event)">
-      <v-col md="12">
+      <v-col md="12" style="position:relative;">
         <v-data-table  :headers="headers"  :items="weappList" item-key="name" hide-default-footer :show-select="true" v-model="selected" :single-select="isSingleSelect" @item-selected="selectWeapp" >
           <template v-slot:[`item.selected`]="{ item }">
             <v-icon small  class="mr-2"  @click="editItem(item)">mdi-pencil</v-icon>
             <v-icon  small  @click="deleteItem(item)">mdi-delete</v-icon>
           </template>
         </v-data-table>
-        <div class="text-center">
-          <v-btn  class="ma-2"  outlined  color="indigo" @click="runCompile">开始编译</v-btn>
-        </div>
+        <v-btn class="mx-2 add-btn" x-small  fab  dark  color="indigo" @click="addWeapp" ><v-icon dark> mdi-plus</v-icon></v-btn>
       </v-col>
     </v-row>
 
 
     <!-- button: 添加小程序 -->
-    <v-btn class="mx-2 add-btn" x-small  fab  dark  color="indigo" @click="addWeapp" ><v-icon dark> mdi-plus</v-icon></v-btn>
+    
 
     <!-- 添加或编辑小程序对话框 -->
     <v-dialog  v-model="dialog"  max-width="600px">
@@ -64,7 +62,7 @@
 <script>
 
 const fs = window.require('fs')
-import {$compileFile, $copyFile, $pushToMobile, $isAppRunning, $isSelectDevice} from '../assets/js/tools'
+import { $pushToMobile, $isSelectDevice} from '../assets/js/tools'
 
 // import {$toast} from '../utils'
 import { mapState } from 'vuex'
@@ -118,48 +116,6 @@ export default {
     //读取小程序列表
     getSelectedList(){
       this.selected = this.weappList.filter(item => item.selected)
-    },
-    //开始运行 编译->拷贝->push到车机
-    runCompile(){
-      //获取配置信息
-      let value = this.config
-      let {weappCompilePath, wechatDevtoolsPath, weappSavePath} = value
-      let {serial} = this.selectedDevice[0]
-      
-      if(!weappCompilePath || !wechatDevtoolsPath || !weappSavePath){
-        console.log('没有配置文件')
-        this.$router.go('About')
-        return 
-      }
-
-      //判断是否选择小程序
-      if(this.selected.length == 0){
-        console.log('请先选择小程序')
-        return 
-      }
-      let {name:weappName, appName, path:projectPath} = this.selected[0];
-
-      $isAppRunning('WeChat', '微信桌面版').then(()=>{
-        return $compileFile(weappName, projectPath, weappCompilePath, wechatDevtoolsPath)
-      })
-      .then(() => {
-        let resourcePath = `${weappCompilePath}/__APP__.wxapkg`
-        let aimPath = `${weappSavePath}/${appName}.wxapkg`
-
-        return $copyFile(resourcePath, aimPath)
-      })
-      .then(() => {
-        return $isSelectDevice(this.selectedDevice, this.localDeviceList)
-      })
-      .then(() => {
-
-        let pkgPath = `${weappSavePath}/${appName}.wxapkg`
-        return $pushToMobile(pkgPath, weappName, appName, serial)
-      })
-      .catch((err) => {
-        //console.error(`运行出错:${err}`)
-        alert(err)
-      })
     },
     //选择小程序
     selectWeapp(row){
@@ -301,7 +257,7 @@ export default {
     align-items: center;
   }
   .add-btn{
-    position:fixed;
+    position: absolute;
     right: 20px;
     top: 20px;
 

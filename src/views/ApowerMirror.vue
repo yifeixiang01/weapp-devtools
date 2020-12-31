@@ -5,7 +5,7 @@
         <!-- <v-row><v-col cols="10"><v-slider min="0"  max="1920" v-model="resolution " step="10"  label="画面分辨率"></v-slider></v-col><v-col><span>{{resolution}}</span></v-col></v-row>
         <v-row><v-col cols="10"> <v-slider  v-model="bitRate"  :max="1024" step="10"  label="传输比特率"  class="align-center"></v-slider></v-col><v-col><span>{{bitRate}}</span></v-col></v-row> -->
         <v-row>
-          <v-col cols="3">
+          <v-col cols="3" sense>
             <v-checkbox v-model="mirrorConfig.alwaysOnUp" label="窗口置顶"></v-checkbox>
           </v-col>
           <v-col  cols="3">
@@ -35,19 +35,19 @@
           <!-- <v-col  cols="4">
             <v-checkbox v-model="selected"  label="旋转镜像"  value="John5"></v-checkbox>
           </v-col> -->
-
         </v-row>
-        <!-- <v-btn  :disabled="!valid"  color="success"  class="mr-4"  @click="submit">保存设置</v-btn> -->
-        <div class="text-center">
-          <v-btn  :disabled="!valid" outlined  color="success"  class="mr-4"  @click="start">启动</v-btn>
-        </div>
+        
+        <v-row justify="center">
+          <v-col sm="3" >
+            <v-btn  :disabled="!valid"  @click="submit">确定</v-btn>
+          </v-col>
+        </v-row>
         
       </v-form>
   
 </template>
 
 <script>
-const scrcpy = require('../assets/js/scrcpy')
 import { mapState } from 'vuex'
 
 export default {
@@ -61,17 +61,14 @@ export default {
     
   },
   computed: {
-    ...mapState(['mirrorConfig', 'config', 'selectedDevice'])
+    ...mapState(['mirrorConfig'])
   },
   methods: {
-    start(){
-      let {weappSavePath} = this.config
-      console.log('保存目录', weappSavePath)
-      let {serial} = this.selectedDevice[0]
-      scrcpy.start(this.mirrorConfig, serial, weappSavePath) 
-    },
     submit(){
       this.$store.commit({type: 'setMirrorConfig', mirrorConfig: this.mirrorConfig})
+    },
+    change(){
+      console.log('表单更新')
     }
   }
 }

@@ -119,7 +119,9 @@ function $pushToMobile(pkgPath, weappName, appName, serial){
 }
 //启动应用
 function $startApp(packageName, serial){
+  console.log(`adb -s ${serial} shell am start ${packageName}`)
     return new Promise((resolve, reject) => {
+      
         exec(`adb -s ${serial} shell am start ${packageName}`, (error, stdout, stderr) => {
             if(error){
                 console.log('111111error', JSON.stringify(error))
@@ -198,7 +200,7 @@ function $getDevices(){
       console.log('getDevices stdout', stdout)
       if(stdout.match(/[0-9]/g)){ 
         console.log('当前的设备', stdout)
-        resolve()
+        resolve(stdout)
       }else{
         reject('当前没有设备连接')
       }
@@ -310,7 +312,7 @@ function $getIPAddress(){
 function $isSelectDevice(selectedDevice, localDeviceList){
   return new Promise((resolve, reject) => {
     console.log('判断是否选择设备', selectedDevice, localDeviceList)
-    if(selectedDevice.length > 0 && localDeviceList.findIndex(item => item.serial === selectedDevice[0].serial) > -1){
+    if(selectedDevice.length > 0 && localDeviceList.findIndex(item => item.deviceId === selectedDevice[0].deviceId) > -1){
       resolve()
     }else{
       reject('请先选择连接的设备！')

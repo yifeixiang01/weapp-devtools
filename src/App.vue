@@ -1,15 +1,16 @@
 <template>
   <v-app>
-    <v-navigation-drawer  dark  mini-variant  mini-variant-width="56" app  permanent>
+    <v-navigation-drawer  dark  mini-variant  mini-variant-width="100" app  permanent>
       <v-list  dense  nav>
         <v-list-item  v-for="item in items"  :key="item.title" :to="item.route">
           <v-list-item-action>
-            <v-tooltip right>
+            <!-- <v-tooltip right>
               <template v-slot:activator="{ on, attrs }">
                 <v-icon v-on="on" v-bind="attrs">{{ item.icon }}</v-icon>
               </template>
               <span>{{item.title}}</span>
-            </v-tooltip>
+            </v-tooltip> -->
+            <div>{{item.title}}</div>
           </v-list-item-action>
         </v-list-item>
       </v-list>
@@ -21,23 +22,7 @@
       </keep-alive>
     </v-main>
 
-    <!-- <v-navigation-drawer  absolute  permanent  right app >
-
-      <v-list dense right>
-        <v-list-item
-          v-for="item in items"
-          :key="item.title"
-        >
-          <v-list-item-icon>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-icon>
-
-          <v-list-item-content>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item> 
-      </v-list>
-    </v-navigation-drawer> -->
+    <OperationBar></OperationBar>
   </v-app>
 </template>
 
@@ -46,27 +31,29 @@
 import adb from './assets/js/adb'
 import { mapState } from 'vuex'
 
+import OperationBar from './views/OperationBar'
 export default {
   name: 'App',
   components: {
-    
+    OperationBar
   },
   data: () => ({
     items: [
-      { title: 'Home', route: '/', icon: 'mdi-view-dashboard' },
       { title: '配置', route: 'About', icon: 'mdi-gavel' },
+      {title: '设备', route: "Terminal", icon: 'mdi-dialpad'},
+      { title: '小程序', route: '/', icon: 'mdi-view-dashboard' },
       { title: '投屏', route: 'ApowerMirror', icon: 'mdi-call-split' },
-      { title: '设备', route: 'Devices', icon: 'mdi-dialpad' },
-      {title: '终端', route: "Terminal", icon: 'mdi-dialpad'}
+      { title: '应用', route: 'Devices', icon: 'mdi-dialpad' },
+      
     ],
     mini: true,
   }),
   created(){
-    
+    console.log(this.selectedDevice)
     this.onDevices();
   },
   computed:{
-    ...mapState(['clinetInfo', 'selectedDevice', 'localDeviceList'])
+    ...mapState(['clinetInfo', 'selectedDevice', 'localDeviceList','config','weappList', 'selectedWeapp', 'mirrorConfig'])
   },
   methods: {
     //监听本地连接的设备变化
@@ -107,7 +94,8 @@ export default {
     //移除本地断开的设备
     removeLocalDevice(deviceId){
       this.$store.commit({type: 'removeLocalDevice', deviceId: deviceId})
-    }
+    },
+   
   }
 }
 </script>
